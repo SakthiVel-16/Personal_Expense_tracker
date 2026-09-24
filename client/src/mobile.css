@@ -1,0 +1,84 @@
+/* Modern device-responsive overrides */
+
+:root {
+  --mobile-gap: clamp(0.75rem, 2vw, 1rem);
+  --mobile-padding: clamp(0.875rem, 2vw, 1.25rem);
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 767px) {
+  html, body {
+    overscroll-behavior-x: none;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    border-radius: 0.9rem;
+  }
+
+  .recharts-wrapper {
+    min-height: 220px !important;
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: rgba(148, 163, 184, 0.12);
+  }
+}
+
+@media (max-width: 640px) {
+  main {
+    padding-top: 4.25rem !important;
+  }
+
+  .space-y-8 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  .space-y-6 > * + * {
+    margin-top: 0.75rem !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.25rem !important;
+  }
+}
+
+@media (max-width: 540px) {
+  .grid-cols-2,
+  .sm\:grid-cols-2,
+  .md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
