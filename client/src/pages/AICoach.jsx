@@ -1,16 +1,29 @@
 import { useEffect, useState, useRef } from 'react'
-import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, CheckCircle } from 'lucide-react'
+import { Bot, Send, Sparkles, TrendingUp, AlertTriangle, Lightbulb, CheckCircle, RotateCcw, Zap, X } from 'lucide-react'
 import { useDateRange } from '../context/DateContext.jsx'
 import api from '../lib/api.js'
 
+/* ── theme maps ── */
 const iconMap = { warning: AlertTriangle, tip: Lightbulb, positive: CheckCircle, alert: AlertTriangle }
 const colorMap = {
-  warning: 'text-amber-400 bg-amber-500/10 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]',
-  tip: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.05)]',
-  positive: 'text-teal-400 bg-teal-500/10 border-teal-500/20 shadow-[0_0_15px_rgba(45,212,191,0.05)]',
-  alert: 'text-rose-400 bg-rose-500/10 border-rose-500/20 shadow-[0_0_15px_rgba(243,113,117,0.05)]'
+  warning:  { bg: 'bg-amber-500/8',  border: 'border-amber-500/25', text: 'text-amber-400',  glow: 'shadow-amber-500/5' },
+  tip:      { bg: 'bg-indigo-500/8', border: 'border-indigo-500/25', text: 'text-indigo-400', glow: 'shadow-indigo-500/5' },
+  positive: { bg: 'bg-emerald-500/8', border: 'border-emerald-500/25', text: 'text-emerald-400', glow: 'shadow-emerald-500/5' },
+  alert:    { bg: 'bg-rose-500/8',   border: 'border-rose-500/25', text: 'text-rose-400',   glow: 'shadow-rose-500/5' },
 }
-const impactColor = { high:'text-rose-400', medium:'text-amber-400', low:'text-teal-400' }
+const impactBadge = {
+  high:   'bg-rose-500/15 text-rose-400 border-rose-500/30',
+  medium: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+  low:    'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+}
+
+/* ── suggested prompts for empty state ── */
+const SUGGESTIONS = [
+  { icon: '💰', text: 'Where am I overspending?' },
+  { icon: '📊', text: 'Analyze my savings rate' },
+  { icon: '🎯', text: 'How can I save ₹5000 this month?' },
+  { icon: '📈', text: 'What are my top 3 expense categories?' },
+]
 
 export default function AICoach() {
   const [insights, setInsights] = useState(() => {
@@ -20,26 +33,28 @@ export default function AICoach() {
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState(() => {
     const saved = sessionStorage.getItem('ai_messages')
-    return saved ? JSON.parse(saved) : [
-      { role: 'ai', text: "Hi! I'm your AI finance coach powered by Gemini. Ask me anything about your spending, savings, or financial goals — or click Generate Insights to get a full analysis." }
-    ]
+    return saved ? JSON.parse(saved) : []
   })
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  const [showInsightsPanel, setShowInsightsPanel] = useState(false)
   const { range } = useDateRange()
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Auto-show insights panel when insights arrive
+  useEffect(() => {
+    if (insights) setShowInsightsPanel(true)
+  }, [insights])
+
   const generateInsights = async () => {
     setLoading(true)
     try {
-      const r = await api.post('/ai/insights', {
-        start: range.start,
-        end: range.end
-      })
+      const r = await api.post('/ai/insights', { start: range.start, end: range.end })
       setInsights(r.data)
       sessionStorage.setItem('ai_insights', JSON.stringify(r.data))
     } catch (e) {
@@ -49,191 +64,269 @@ export default function AICoach() {
     setLoading(false)
   }
 
-  const sendMessage = async () => {
-    if (!input.trim() || chatLoading) return
-    const userMsg = input.trim()
+  const sendMessage = async (text) => {
+    const msg = (text || input).trim()
+    if (!msg || chatLoading) return
     setInput('')
-    const newMessages = [...messages, { role: 'user', text: userMsg }]
+    const newMessages = [...messages, { role: 'user', text: msg }]
     setMessages(newMessages)
     sessionStorage.setItem('ai_messages', JSON.stringify(newMessages))
     setChatLoading(true)
     try {
-      const r = await api.post('/ai/chat', {
-        message: userMsg,
-        start: range.start,
-        end: range.end
-      })
+      const r = await api.post('/ai/chat', { message: msg, start: range.start, end: range.end })
       const updated = [...newMessages, { role: 'ai', text: r.data.reply }]
       setMessages(updated)
       sessionStorage.setItem('ai_messages', JSON.stringify(updated))
     } catch (e) {
-      const updated = [...newMessages, { role: 'ai', text: 'Sorry, something went wrong. Try again.' }]
+      const updated = [...newMessages, { role: 'ai', text: 'Sorry, something went wrong. Please try again.' }]
       setMessages(updated)
       sessionStorage.setItem('ai_messages', JSON.stringify(updated))
     }
     setChatLoading(false)
   }
 
+  const clearChat = () => {
+    setMessages([])
+    sessionStorage.removeItem('ai_messages')
+  }
+
+  const hasMessages = messages.length > 0
+
   return (
-    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-0">
-      {/* Cinematic Ambient Lighting System */}
-      <div className="absolute top-[-10%] right-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
+    <div className="page-shell relative bg-transparent overflow-hidden p-0" style={{ height: 'calc(100dvh - 120px)' }}>
 
-      <div className="relative z-10 max-w-[1700px] mx-auto pb-12">
+      {/* ── Ambient glow ── */}
+      <div className="absolute top-[-15%] right-[10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-[-15%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[180px] pointer-events-none" />
 
-        {/* Action buttons row */}
-        <div className="flex flex-wrap items-center justify-end gap-3 mb-6">
-          {insights && (
-            <button
-              onClick={() => {
-                setInsights(null)
-                sessionStorage.removeItem('ai_insights')
-              }}
-              className="flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/10 text-white/70 border border-white/5
-              px-5 py-3 rounded-2xl text-sm font-bold tracking-wide transition-all">
-              Clear Cache
-            </button>
-          )}
-          <button onClick={generateInsights} disabled={loading}
-            className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-50
-            px-5 py-3 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-lg shadow-white/10 group">
-            {loading
-              ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"/>
-              : <><Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300"/> Generate Insights</>
-            }
-          </button>
-        </div>
+      {/* ── Main grid: Chat + Insights ── */}
+      <div className="relative z-10 h-full flex flex-col lg:flex-row gap-5">
 
-        {/* Main 2-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* ════════════════════════════════════════════
+            LEFT: Chat Panel (primary — takes most space)
+            ════════════════════════════════════════════ */}
+        <div className="flex-1 min-w-0 flex flex-col h-full">
+          <div className="flex flex-col h-full bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-black/20">
 
-          {/* LEFT: Chat panel (takes 3 cols on desktop) */}
-          <div className="lg:col-span-3 order-1">
-            <div className="ai-chat-panel bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[24px] sm:rounded-[32px] flex flex-col h-[60vh] sm:h-[65vh] lg:h-[72vh] overflow-hidden shadow-2xl">
-              <div className="ai-chat-header px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
-                  <p className="text-white/90 text-xs sm:text-sm font-bold tracking-wide">Interactive Session</p>
-                </div>
-                <button
-                  onClick={() => {
-                    const fresh = [{ role: 'ai', text: "Hi! I'm your AI finance coach powered by Gemini. Ask me anything about your spending, savings, or financial goals — or click Generate Insights to get a full analysis." }]
-                    setMessages(fresh)
-                    sessionStorage.removeItem('ai_messages')
-                  }}
-                  className="text-white/40 hover:text-white/80 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-colors">
-                  Reset
-                </button>
-              </div>
-
-              {/* Messages */}
-              <div className="ai-chat-messages flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                {messages.map((m, i) => (
-                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    {m.role === 'ai' && (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mr-2 sm:mr-3 shrink-0 mt-1 shadow-inner">
-                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400"/>
-                      </div>
-                    )}
-                    <div className={`max-w-[85%] sm:max-w-[80%] px-4 sm:px-5 py-3 sm:py-4 rounded-2xl text-xs sm:text-sm leading-relaxed font-medium shadow-lg ${
-                      m.role === 'user'
-                        ? 'bg-indigo-500 text-white rounded-br-sm shadow-indigo-500/20'
-                        : 'bg-white/[0.03] border border-white/5 text-white/80 rounded-bl-sm backdrop-blur-md'
-                    }`}>
-                      {m.text}
-                    </div>
+            {/* ── Chat Header ── */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center">
+                    <Bot className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-indigo-400" />
                   </div>
-                ))}
-                {chatLoading && (
-                  <div className="flex justify-start">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mr-2 sm:mr-3 shrink-0 mt-1 shadow-inner">
-                      <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400"/>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a0e1a] shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                </div>
+                <div>
+                  <p className="text-white/90 text-sm font-semibold tracking-wide">AI Coach</p>
+                  <p className="text-white/30 text-[10px] font-medium tracking-wider hidden sm:block">Powered by Gemini · Online</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasMessages && (
+                  <button onClick={clearChat}
+                    className="flex items-center gap-1.5 text-white/30 hover:text-white/70 text-[11px] font-semibold tracking-wide px-3 py-1.5 rounded-lg hover:bg-white/[0.05] transition-all"
+                    title="Clear chat">
+                    <RotateCcw className="w-3 h-3" /> Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* ── Chat Messages Area ── */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              {!hasMessages ? (
+                /* ── Empty state: Welcome + Suggestions ── */
+                <div className="flex flex-col items-center justify-center h-full px-4 sm:px-8 py-8">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/10">
+                    <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-indigo-400/80" />
+                  </div>
+                  <h2 className="text-white/90 text-lg sm:text-xl font-bold tracking-tight mb-1.5">Your AI Finance Coach</h2>
+                  <p className="text-white/35 text-xs sm:text-sm font-medium text-center max-w-md mb-8">
+                    Ask me anything about your spending habits, savings goals, or financial health.
+                  </p>
+
+                  {/* Suggestion chips */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-md">
+                    {SUGGESTIONS.map((s, i) => (
+                      <button key={i} onClick={() => sendMessage(s.text)}
+                        className="flex items-center gap-3 text-left px-4 py-3.5 rounded-xl bg-white/[0.025] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-200 group">
+                        <span className="text-lg shrink-0">{s.icon}</span>
+                        <span className="text-white/50 text-xs sm:text-[13px] font-medium group-hover:text-white/80 transition-colors leading-snug">{s.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* ── Message list ── */
+                <div className="p-4 sm:p-6 space-y-5">
+                  {messages.map((m, i) => (
+                    <div key={i} className={`flex gap-2.5 sm:gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      {m.role === 'ai' && (
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                          <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
+                        </div>
+                      )}
+                      <div className={`max-w-[82%] sm:max-w-[75%] px-4 py-3 sm:px-5 sm:py-3.5 text-[13px] sm:text-sm leading-relaxed font-medium ${
+                        m.role === 'user'
+                          ? 'bg-indigo-500 text-white rounded-2xl rounded-tr-md shadow-lg shadow-indigo-500/15'
+                          : 'bg-white/[0.035] border border-white/[0.06] text-white/80 rounded-2xl rounded-tl-md'
+                      }`}>
+                        {m.text}
+                      </div>
                     </div>
-                    <div className="bg-white/[0.03] border border-white/5 backdrop-blur-md px-4 sm:px-5 py-3 sm:py-4 rounded-2xl rounded-bl-sm flex items-center shadow-lg">
-                      <div className="flex gap-1">
-                        {[0,1,2].map(i => (
-                          <div key={i} className="w-2 h-2 rounded-full bg-white/40 animate-bounce"
-                            style={{animationDelay:`${i*0.15}s`}}/>
+                  ))}
+
+                  {/* Typing indicator */}
+                  {chatLoading && (
+                    <div className="flex gap-2.5 sm:gap-3">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
+                      </div>
+                      <div className="bg-white/[0.035] border border-white/[0.06] px-5 py-4 rounded-2xl rounded-tl-md flex items-center gap-1.5">
+                        {[0, 1, 2].map(i => (
+                          <div key={i} className="w-[6px] h-[6px] rounded-full bg-white/30 animate-bounce"
+                            style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.8s' }} />
                         ))}
                       </div>
                     </div>
-                  </div>
-                )}
-                <div ref={bottomRef}/>
-              </div>
-
-              {/* Input */}
-              <div className="ai-chat-input p-3 sm:p-4 lg:p-6 border-t border-white/5 bg-white/[0.01] shrink-0">
-                <div className="flex gap-2">
-                  <input value={input} onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                    placeholder="Ask about your finances..."
-                    className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-3 sm:py-4
-                    text-white text-xs sm:text-sm font-medium placeholder-white/30 outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all"/>
-                  <button onClick={sendMessage} disabled={chatLoading || !input.trim()}
-                    className="w-11 h-11 sm:w-14 sm:h-14 bg-white hover:bg-white/90 disabled:opacity-40
-                    rounded-xl sm:rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-white/10 shrink-0 group">
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5 text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"/>
-                  </button>
+                  )}
+                  <div ref={bottomRef} />
                 </div>
-                <p className="text-white/20 text-[9px] sm:text-[10px] uppercase font-bold tracking-widest mt-3 text-center hidden sm:block">
-                  Gemini 2.5 Flash · Free tier · Your data never leaves your machine
-                </p>
+              )}
+            </div>
+
+            {/* ── Chat Input ── */}
+            <div className="shrink-0 px-3 sm:px-5 py-3 sm:py-4 border-t border-white/[0.06] bg-white/[0.015]">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                  placeholder="Ask about your finances..."
+                  className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5
+                    text-white text-xs sm:text-sm font-medium placeholder-white/25 outline-none
+                    focus:border-indigo-500/40 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(99,102,241,0.08)] transition-all"
+                />
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={chatLoading || !input.trim()}
+                  className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-500 hover:bg-indigo-400 disabled:opacity-30 disabled:hover:bg-indigo-500
+                    rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 shadow-lg shadow-indigo-500/25 shrink-0 group"
+                >
+                  <Send className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT: Insights panel (takes 2 cols on desktop) */}
-          <div className="lg:col-span-2 order-2 space-y-6">
+        {/* ════════════════════════════════════════════
+            RIGHT: Insights Panel (secondary)
+            ════════════════════════════════════════════ */}
+        <div className={`
+          lg:w-[380px] xl:w-[420px] shrink-0 flex flex-col gap-4
+          ${/* Mobile: show as overlay when insights exist */ ''}
+          ${showInsightsPanel && insights ? 'fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 lg:relative lg:inset-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none lg:p-0' : ''}
+          ${!showInsightsPanel && insights ? 'hidden lg:flex' : ''}
+          ${!insights ? '' : ''}
+        `}>
+
+          {/* Close button for mobile overlay */}
+          {showInsightsPanel && insights && (
+            <button onClick={() => setShowInsightsPanel(false)}
+              className="lg:hidden self-end w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:bg-white/20 transition-colors mb-1">
+              <X className="w-5 h-5" />
+            </button>
+          )}
+
+          {/* Generate Insights button — always visible */}
+          <button
+            onClick={generateInsights}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2.5
+              bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400
+              disabled:opacity-50 disabled:cursor-not-allowed
+              text-white px-6 py-4 rounded-2xl text-sm font-bold tracking-wide
+              transition-all duration-300 shadow-xl shadow-indigo-500/20
+              hover:shadow-2xl hover:shadow-indigo-500/30 hover:-translate-y-0.5 group shrink-0"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Analyzing your data...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Generate Insights</span>
+              </>
+            )}
+          </button>
+
+          {/* Clear insights button */}
+          {insights && (
+            <button
+              onClick={() => { setInsights(null); sessionStorage.removeItem('ai_insights'); setShowInsightsPanel(false) }}
+              className="w-full flex items-center justify-center gap-2 bg-white/[0.03] hover:bg-white/[0.06] text-white/50 hover:text-white/80
+                border border-white/[0.06] px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all shrink-0"
+            >
+              <RotateCcw className="w-3 h-3" /> Clear insights
+            </button>
+          )}
+
+          {/* Insights content — scrollable */}
+          <div className="flex-1 overflow-y-auto space-y-4 min-h-0 pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {!insights && !loading && (
-              <div className="bg-white/[0.02] backdrop-blur-2xl border border-dashed border-white/10 rounded-[24px] sm:rounded-[32px] p-8 sm:p-10 flex flex-col items-center justify-center text-center min-h-[280px] sm:min-h-[340px] hover:bg-white/[0.03] transition-all duration-500">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-white/[0.05] border border-white/5 flex items-center justify-center mb-5 sm:mb-6 shadow-inner">
-                  <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-white/40"/>
+              <div className="bg-white/[0.015] border border-dashed border-white/[0.08] rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
+                  <Zap className="w-7 h-7 text-white/20" />
                 </div>
-                <p className="text-white/90 text-lg sm:text-xl font-bold tracking-wide">Awaiting Initialization</p>
-                <p className="text-white/40 text-xs sm:text-sm mt-2 mb-6 sm:mb-8 max-w-sm font-medium">
-                  Click generate insights to get a complete intelligence report on your financial patterns.
-                </p>
+                <p className="text-white/50 text-sm font-semibold mb-1">No insights yet</p>
+                <p className="text-white/25 text-xs font-medium max-w-[240px]">Click the button above to generate an AI-powered analysis of your finances</p>
               </div>
             )}
 
             {loading && (
-              <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[24px] sm:rounded-[32px] p-10 sm:p-12 flex flex-col items-center justify-center min-h-[280px]">
-                <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin mb-6"/>
-                <p className="text-white/70 text-xs sm:text-sm font-bold tracking-widest uppercase">Processing System Data...</p>
+              <div className="bg-white/[0.015] border border-white/[0.06] rounded-2xl p-8 flex flex-col items-center justify-center">
+                <div className="w-8 h-8 border-[3px] border-white/10 border-t-indigo-400 rounded-full animate-spin mb-4" />
+                <p className="text-white/50 text-xs font-semibold tracking-wider uppercase">Processing...</p>
               </div>
             )}
 
             {insights && (
               <>
-                {/* Summary */}
-                <div className="bg-indigo-500/10 backdrop-blur-2xl border border-indigo-500/20 rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 shadow-[0_0_30px_rgba(99,102,241,0.05)]">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                      <TrendingUp className="w-5 h-5 text-indigo-400"/>
+                {/* Executive Summary */}
+                <div className="bg-indigo-500/8 border border-indigo-500/20 rounded-2xl p-5 shadow-lg shadow-indigo-500/5">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/25">
+                      <TrendingUp className="w-4 h-4 text-indigo-400" />
                     </div>
-                    <p className="text-indigo-400 text-base sm:text-lg font-bold tracking-wide">Executive Summary</p>
+                    <p className="text-indigo-400 text-sm font-bold tracking-wide">Summary</p>
                   </div>
-                  <p className="text-white/80 text-sm sm:text-base leading-relaxed font-medium">{insights.summary}</p>
+                  <p className="text-white/70 text-[13px] leading-relaxed font-medium">{insights.summary}</p>
                 </div>
 
-                {/* Insight cards */}
+                {/* Individual insight cards */}
                 {insights.insights?.map((ins, i) => {
                   const Icon = iconMap[ins.type] || Lightbulb
-                  const cls = colorMap[ins.type] || colorMap.tip
+                  const theme = colorMap[ins.type] || colorMap.tip
+                  const badge = impactBadge[ins.impact] || impactBadge.medium
                   return (
-                    <div key={i} className={`backdrop-blur-xl border rounded-[18px] sm:rounded-[24px] p-4 sm:p-6 transition-all hover:-translate-y-1 duration-300 ${cls}`}>
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 mt-0.5 shrink-0"/>
+                    <div key={i} className={`${theme.bg} border ${theme.border} rounded-2xl p-4 sm:p-5 transition-all duration-200 hover:-translate-y-0.5 shadow-lg ${theme.glow}`}>
+                      <div className="flex items-start gap-3">
+                        <div className={`w-8 h-8 rounded-lg ${theme.bg} border ${theme.border} flex items-center justify-center shrink-0 mt-0.5`}>
+                          <Icon className={`w-4 h-4 ${theme.text}`} />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 mb-2">
-                            <p className="text-sm sm:text-base font-bold tracking-wide">{ins.title}</p>
-                            <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/5 border border-white/10 w-fit ${impactColor[ins.impact]}`}>
-                              {ins.impact} impact
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <p className={`text-sm font-bold ${theme.text} leading-snug`}>{ins.title}</p>
+                            <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${badge}`}>
+                              {ins.impact}
                             </span>
                           </div>
-                          <p className="text-xs sm:text-sm opacity-90 leading-relaxed font-medium">{ins.message}</p>
+                          <p className="text-white/55 text-xs leading-relaxed font-medium">{ins.message}</p>
                         </div>
                       </div>
                     </div>
@@ -243,6 +336,17 @@ export default function AICoach() {
             )}
           </div>
         </div>
+
+        {/* ── Mobile FAB: View Insights (only when insights exist and panel is hidden) ── */}
+        {insights && !showInsightsPanel && (
+          <button
+            onClick={() => setShowInsightsPanel(true)}
+            className="lg:hidden fixed bottom-6 right-6 z-40 w-14 h-14 bg-indigo-500 hover:bg-indigo-400 rounded-full flex items-center justify-center shadow-2xl shadow-indigo-500/40 transition-all animate-bounce"
+            style={{ animationDuration: '2s', animationIterationCount: 3 }}
+          >
+            <Sparkles className="w-6 h-6 text-white" />
+          </button>
+        )}
       </div>
     </div>
   )
