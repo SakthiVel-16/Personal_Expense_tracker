@@ -100,7 +100,7 @@ function ItemForm({ initial, onSave, onClose }) {
 
 function ItemRow({ item, onEdit, onDelete }) {
   return (
-    <div className="flex items-center justify-between py-4 px-5 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/5 transition-all duration-300 group">
+    <div className="net-worth-item-row flex items-center justify-between py-4 px-5 rounded-2xl hover:bg-white/[0.04] border border-transparent hover:border-white/5 transition-all duration-300 group">
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold capitalize shadow-inner group-hover:scale-110 transition-transform duration-300
           ${item.type === 'asset' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
@@ -111,11 +111,11 @@ function ItemRow({ item, onEdit, onDelete }) {
           <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-0.5">{item.category} • {item.date}</p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="net-worth-item-details flex items-center gap-3">
         <p className={`text-lg font-black tracking-tighter ${item.type === 'asset' ? 'text-teal-400' : 'text-rose-400'}`}>
           {item.type === 'liability' ? '-' : '+'}{fmt(item.amount)}
         </p>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+        <div className="net-worth-item-actions flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
           <button onClick={() => onEdit(item)}
             className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
             <Pencil className="w-3.5 h-3.5"/>
@@ -161,7 +161,7 @@ export default function NetWorth() {
   const ratio = data.assets > 0 ? Math.min((data.liabilities / data.assets) * 100, 100) : 0
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -210,7 +210,7 @@ export default function NetWorth() {
         </div>
 
         {/* KPI row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="net-worth-kpis grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] px-8 py-6 hover:bg-white/[0.04] transition-colors">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shadow-inner">

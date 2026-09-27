@@ -177,7 +177,7 @@ export default function Dashboard() {
   const chartData = Object.values(chartMap)
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -230,7 +230,7 @@ export default function Dashboard() {
       )}
 
       {/* KPI row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="dashboard-kpis grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <KPICard label="Total Income" value={fmt(income)} icon={TrendingUp}
           color="text-teal-400" sub="Inflow this period" />
         <KPICard label="Total Expenses" value={fmt(expense)} icon={TrendingDown}

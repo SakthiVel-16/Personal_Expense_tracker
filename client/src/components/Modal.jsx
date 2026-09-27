@@ -2,8 +2,8 @@ import { X } from 'lucide-react'
 
 export default function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-[#050816]/80 backdrop-blur-xl z-50 flex items-end md:items-center justify-center p-0 md:p-4 sm:p-6">
-      <div className="bg-[#050816]/90 backdrop-blur-3xl border border-white/10 rounded-t-[32px] md:rounded-[32px] w-full md:max-w-md shadow-2xl shadow-black overflow-hidden relative max-h-[85vh] md:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom md:slide-in-from-center">
+    <div className="modal-backdrop fixed inset-0 bg-[#050816]/80 backdrop-blur-xl z-50 flex items-end md:items-center justify-center p-0 md:p-4 sm:p-6">
+      <div className="modal-panel bg-[#050816]/90 backdrop-blur-3xl border border-white/10 rounded-t-[32px] md:rounded-[32px] w-full md:max-w-md shadow-2xl shadow-black overflow-hidden relative max-h-[85vh] md:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom md:slide-in-from-center">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 opacity-50" />
         
         {/* Mobile drag handle */}

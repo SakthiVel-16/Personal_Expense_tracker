@@ -74,7 +74,7 @@ export default function AICoach() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -171,8 +171,8 @@ export default function AICoach() {
         </div>
 
         {/* Chat panel */}
-        <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] flex flex-col h-[700px] overflow-hidden shadow-2xl">
-          <div className="px-8 py-6 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
+        <div className="ai-chat-panel bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] flex flex-col h-[700px] overflow-hidden shadow-2xl">
+          <div className="ai-chat-header px-8 py-6 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
               <p className="text-white/90 text-sm font-bold tracking-wide">Interactive Session</p>
@@ -189,7 +189,7 @@ export default function AICoach() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          <div className="ai-chat-messages flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'ai' && (
@@ -225,7 +225,7 @@ export default function AICoach() {
           </div>
 
           {/* Input */}
-          <div className="p-6 border-t border-white/5 bg-white/[0.01]">
+          <div className="ai-chat-input p-6 border-t border-white/5 bg-white/[0.01]">
             <div className="flex gap-2">
               <input value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
