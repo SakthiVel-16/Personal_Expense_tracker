@@ -182,12 +182,12 @@ export default function AICoach() {
       <div className="absolute bottom-[-15%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[180px] pointer-events-none" />
 
       {/* Main Container - stacked on mobile, row on desktop */}
-      <div className="relative z-10 flex flex-col lg:flex-row gap-5 h-[calc(100vh-140px)] min-h-[600px] lg:min-h-0">
+      <div className="relative z-10 flex flex-col lg:flex-row gap-5 lg:h-[calc(100vh-140px)]">
 
         {/* ═══════════════════════════════════════
             CHAT PANEL 
             ═══════════════════════════════════════ */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-[500px] lg:min-h-0 bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+        <div className="w-full lg:flex-1 h-[70dvh] min-h-[500px] lg:h-auto lg:min-h-0 flex flex-col bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
 
             {/* Chat Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
