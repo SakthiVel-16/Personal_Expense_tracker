@@ -82,9 +82,9 @@ export default function AICoach() {
       <div className="relative z-10 space-y-8 max-w-[1700px] mx-auto pb-12 pt-2 md:pt-4">
         
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mb-2">
-          <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full sm:w-auto">
-            {insights && (
+        {insights && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mb-2">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full sm:w-auto">
               <button
                 onClick={() => {
                   setInsights(null)
@@ -94,17 +94,17 @@ export default function AICoach() {
                 px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all">
                 Clear Cache
               </button>
-            )}
-            <button onClick={generateInsights} disabled={loading}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-50
-              px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-lg shadow-white/10 group">
-              {loading
-                ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"/>
-                : <><Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300"/> Run Diagnostics</>
-              }
-            </button>
+              <button onClick={generateInsights} disabled={loading}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-50
+                px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-lg shadow-white/10 group">
+                {loading
+                  ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"/>
+                  : <><Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300"/> Run Diagnostics</>
+                }
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Insights panel */}
@@ -115,9 +115,14 @@ export default function AICoach() {
                 <Bot className="w-10 h-10 text-white/40"/>
               </div>
               <p className="text-white/90 text-xl font-bold tracking-wide">Awaiting Initialization</p>
-              <p className="text-white/40 text-sm mt-2 max-w-sm font-medium">
+              <p className="text-white/40 text-sm mt-2 mb-8 max-w-sm font-medium">
                 Run diagnostics to generate a complete intelligence report on your financial patterns.
               </p>
+              <button onClick={generateInsights}
+                className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90
+                px-8 py-4 rounded-2xl text-base font-bold tracking-wide transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] group">
+                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300"/> Generate Insights
+              </button>
             </div>
           )}
 
