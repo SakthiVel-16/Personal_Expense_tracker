@@ -38,8 +38,8 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     res.cookie('jwt', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // true if on HTTPS
-      sameSite: 'strict',
+      secure: true, // MUST be true for SameSite=none
+      sameSite: 'none', // MUST be 'none' for cross-origin (Vercel to Render)
       maxAge: 60 * 60 * 1000 // 1 hour
     });
 
@@ -53,6 +53,8 @@ router.post('/login', loginLimiter, async (req, res) => {
 router.post('/logout', (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
+    secure: true,
+    sameSite: 'none',
     expires: new Date(0)
   });
   res.json({ message: 'Logged out successfully' });
