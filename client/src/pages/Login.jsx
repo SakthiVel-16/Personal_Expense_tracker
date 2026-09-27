@@ -13,7 +13,8 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await api.post('/auth/login', { password })
+      const res = await api.post('/auth/login', { password })
+      sessionStorage.setItem('token', res.data.token)
       sessionStorage.setItem('tabSession', 'active')
       window.location.href = '/'
     } catch (err) {

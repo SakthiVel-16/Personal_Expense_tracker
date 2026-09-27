@@ -62,7 +62,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <p className="text-white/30 text-[9px] md:text-[10px] uppercase font-bold tracking-widest">Built for Sakthi</p>
         </div>
         <button 
-          onClick={async () => { await api.post('/auth/logout'); window.location.href = '/login'; }}
+          onClick={async () => { sessionStorage.removeItem('token'); await api.post('/auth/logout'); window.location.href = '/login'; }}
           className="text-white/40 hover:text-rose-400 transition-colors p-2 rounded-xl hover:bg-white/5"
           title="Logout"
         >

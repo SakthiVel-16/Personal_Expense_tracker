@@ -32,7 +32,8 @@ function Layout() {
   useEffect(() => {
     setSidebarOpen(false)
     if (!sessionStorage.getItem('tabSession')) {
-      // If we open a new tab, force logout to clear cookies
+      // If we open a new tab, force logout to clear token
+      sessionStorage.removeItem('token')
       api.post('/auth/logout').then(() => {
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'

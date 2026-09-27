@@ -36,14 +36,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       expiresIn: '1h'
     });
 
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: true, // MUST be true for SameSite=none
-      sameSite: 'none', // MUST be 'none' for cross-origin (Vercel to Render)
-      maxAge: 60 * 60 * 1000 // 1 hour
-    });
-
-    res.json({ message: 'Logged in successfully' });
+    res.json({ message: 'Logged in successfully', token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -51,17 +44,13 @@ router.post('/login', loginLimiter, async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.cookie('jwt', '', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    expires: new Date(0)
-  });
   res.json({ message: 'Logged out successfully' });
 });
 
 router.get('/me', (req, res) => {
-  const token = req.cookies.jwt;
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
   if (!token) return res.json({ loggedIn: false });
 
   try {
