@@ -43,7 +43,7 @@ function Layout() {
   }, [location.pathname])
 
   return (
-    <div className="app-shell flex min-h-[100dvh] bg-[#0f1117] text-slate-100">
+    <div className="app-shell flex min-h-[100dvh] bg-transparent text-slate-100">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}

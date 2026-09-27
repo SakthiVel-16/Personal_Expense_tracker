@@ -74,33 +74,29 @@ export default function AICoach() {
   }
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="relative z-10 space-y-8 max-w-[1700px] mx-auto pb-12 pt-20">
+      <div className="relative z-10 space-y-8 max-w-[1700px] mx-auto pb-12 pt-2 md:pt-4">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-white text-4xl font-black tracking-tighter">System Intelligence</h1>
-            <p className="text-white/40 text-sm font-medium mt-1.5 tracking-wide">Powered by Gemini 2.5 Flash OS.</p>
-          </div>
-          <div className="flex items-center gap-3">
+        {/* Header Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mb-2">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full sm:w-auto">
             {insights && (
               <button
                 onClick={() => {
                   setInsights(null)
                   sessionStorage.removeItem('ai_insights')
                 }}
-                className="flex items-center gap-2 bg-white/[0.05] hover:bg-white/10 text-white/70 border border-white/5
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/10 text-white/70 border border-white/5
                 px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all">
                 Clear Cache
               </button>
             )}
             <button onClick={generateInsights} disabled={loading}
-              className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-50
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-50
               px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-lg shadow-white/10 group">
               {loading
                 ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"/>

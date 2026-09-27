@@ -106,7 +106,7 @@ function TransactionForm({ initial, categories, onSave, onClose }) {
             text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all appearance-none">
             <option value="">Select...</option>
             {filteredCats.map(c => (
-              <option key={c.id} value={c.id} className="bg-[#050816]">{c.icon} {c.name}</option>
+              <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
             ))}
           </select>
         </div>
@@ -242,7 +242,7 @@ export default function Transactions() {
   const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -289,16 +289,16 @@ export default function Transactions() {
             <select value={filterType} onChange={e => setFilterType(e.target.value)}
               className="flex-1 md:flex-none bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3.5 text-white/70
               text-sm font-medium outline-none focus:border-white/20 transition-all appearance-none cursor-pointer">
-              <option value="" className="bg-[#050816]">All flows</option>
-              <option value="income" className="bg-[#050816]">Inflow (Income)</option>
-              <option value="expense" className="bg-[#050816]">Outflow (Expense)</option>
+              <option value="" className="bg-transparent">All flows</option>
+              <option value="income" className="bg-transparent">Inflow (Income)</option>
+              <option value="expense" className="bg-transparent">Outflow (Expense)</option>
             </select>
             <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
               className="flex-1 md:flex-none bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3.5 text-white/70
               text-sm font-medium outline-none focus:border-white/20 transition-all appearance-none cursor-pointer max-w-[180px] truncate">
-              <option value="" className="bg-[#050816]">All categories</option>
+              <option value="" className="bg-transparent">All categories</option>
               {categories.map(c => (
-                <option key={c.id} value={c.id} className="bg-[#050816]">{c.icon} {c.name}</option>
+                <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
               ))}
             </select>
             {(filterType || filterCat || search) && (

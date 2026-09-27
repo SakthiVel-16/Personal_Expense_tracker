@@ -69,7 +69,7 @@ function HealthScore({ score }) {
             </button>
             
             {showTooltip && (
-              <div className="absolute bottom-full right-0 translate-x-12 mb-3 w-80 bg-[#0a0e27]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/70 z-[9999]">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[280px] sm:w-80 bg-[#0a0e27]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/70 z-[9999]">
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#0a0e27]/95 border-b border-r border-white/10 rotate-45"></div>
                 
                 <p className="text-white font-bold text-base mb-3 pb-3 border-b border-white/10">What is AI Wealth Score?</p>
@@ -129,7 +129,7 @@ const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#050816]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
+    <div className="bg-transparent/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
       <p className="text-white/50 mb-3 font-semibold tracking-wide uppercase text-[10px]">{label}</p>
       <div className="space-y-2">
         {payload.map(p => (
@@ -177,7 +177,7 @@ export default function Dashboard() {
   const chartData = Object.values(chartMap)
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[150px] pointer-events-none" />

@@ -116,9 +116,9 @@ function BudgetForm({ initial, categories, onSave, onClose }) {
         <select value={form.category_id} onChange={e => set('category_id', e.target.value)}
           className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4
           text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all appearance-none">
-          <option value="" className="bg-[#050816]">Select category...</option>
+          <option value="" className="bg-transparent">Select category...</option>
           {categories.filter(c => c.type === 'expense').map(c => (
-            <option key={c.id} value={c.id} className="bg-[#050816]">{c.icon} {c.name}</option>
+            <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
           ))}
         </select>
       </div>
@@ -206,7 +206,7 @@ export default function Budgets() {
   const healthyCount = budgets.filter(b => !b.is_over && b.percentage < b.alert_threshold).length
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none" />

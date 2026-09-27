@@ -67,7 +67,7 @@ function ItemForm({ initial, onSave, onClose }) {
           <select value={form.category} onChange={e => set('category', e.target.value)}
             className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3.5
             text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all capitalize appearance-none">
-            {cats.map(c => <option key={c} value={c} className="bg-[#050816]">{c}</option>)}
+            {cats.map(c => <option key={c} value={c} className="bg-transparent">{c}</option>)}
           </select>
         </div>
         <div>
@@ -161,7 +161,7 @@ export default function NetWorth() {
   const ratio = data.assets > 0 ? Math.min((data.liabilities / data.assets) * 100, 100) : 0
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />

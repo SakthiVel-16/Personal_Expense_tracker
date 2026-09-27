@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050816] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-4 relative overflow-hidden">
       {/* Ambient lighting */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -56,7 +56,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-[#050816] text-white pl-12 pr-4 py-4 rounded-2xl border border-white/5 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder:text-white/20 font-medium"
+                className="w-full bg-transparent text-white pl-12 pr-4 py-4 rounded-2xl border border-white/5 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all placeholder:text-white/20 font-medium"
               />
             </div>
           </div>

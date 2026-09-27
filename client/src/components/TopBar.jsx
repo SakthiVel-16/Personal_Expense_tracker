@@ -66,7 +66,7 @@ export default function TopBar({ title }) {
               {/* Custom range */}
               <div className="border-t border-white/5 p-4 bg-white/[0.01] space-y-4">
                 <p className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em] px-1">Custom Timeframe</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-white/40 text-[10px] tracking-[0.1em] font-bold uppercase mb-1.5 block">Start</label>
                     <input type="date" value={customStart}

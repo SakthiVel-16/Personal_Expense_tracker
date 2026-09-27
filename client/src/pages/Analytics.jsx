@@ -8,7 +8,7 @@ const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 const COLORS = ['#2dd4bf','#fb7185','#818cf8','#f472b6','#fbbf24','#34d399','#a78bfa','#22d3ee','#f87171','#e879f9']
 
 const Tip = ({ active, payload, label }) => active && payload?.length ? (
-  <div className="bg-[#050816]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
+  <div className="bg-transparent/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
     <p className="text-white/50 mb-3 font-semibold tracking-wide uppercase text-[10px]">{label}</p>
     <div className="space-y-2">
       {payload.map(p => (
@@ -91,7 +91,7 @@ export default function Analytics() {
     : 'Serious lifestyle creep 🚨'
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />
