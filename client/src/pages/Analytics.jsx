@@ -91,20 +91,12 @@ export default function Analytics() {
     : 'Serious lifestyle creep 🚨'
 
   return (
-    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="relative z-10 space-y-8 max-w-[1700px] mx-auto pb-12">
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-white text-4xl font-black tracking-tighter">System Analytics</h1>
-          <p className="text-white/40 text-sm font-medium mt-1.5 tracking-wide">Deep insights, velocity tracking, and anomaly detection.</p>
-        </div>
-      </div>
       
       {/* SECTION 1: KPIs */}
       <div className="analytics-kpis grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

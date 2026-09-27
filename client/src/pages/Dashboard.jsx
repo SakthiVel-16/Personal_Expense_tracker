@@ -177,7 +177,7 @@ export default function Dashboard() {
   const chartData = Object.values(chartMap)
 
   return (
-    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[150px] pointer-events-none" />

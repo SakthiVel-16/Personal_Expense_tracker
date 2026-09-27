@@ -47,7 +47,7 @@ function Layout() {
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="mobile-menu-button md:hidden fixed z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
+        className="mobile-menu-button md:hidden fixed top-4 left-4 z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -56,7 +56,7 @@ function Layout() {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main content */}
-      <main className="app-main flex-1 min-h-[100dvh] overflow-y-auto p-3 pt-16 sm:p-4 md:ml-64 md:p-8 md:pt-8">
+      <main className="app-main flex-1 min-h-[100dvh] overflow-y-auto px-4 pt-16 pb-8 sm:px-5 md:ml-64 md:px-8 md:pt-8 md:pb-8">
         <TopBar title={title} />
         <Routes>
           <Route path="/" element={<Dashboard />} />

@@ -206,18 +206,14 @@ export default function Budgets() {
   const healthyCount = budgets.filter(b => !b.is_over && b.percentage < b.alert_threshold).length
 
   return (
-    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-2 sm:p-4 md:p-0">
+    <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-0">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="relative z-10 space-y-8 max-w-[1700px] mx-auto pb-12">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-white text-4xl font-black tracking-tighter">Budgets</h1>
-            <p className="text-white/40 text-sm font-medium mt-1.5 tracking-wide">System limit controls and pacing.</p>
-          </div>
+        {/* Action button */}
+        <div className="flex justify-end">
           <button onClick={() => { setEditBudget(null); setShowModal(true); }}
             className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90
             px-6 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-lg shadow-white/10 group">

@@ -590,7 +590,7 @@ export default function Savings() {
   )
 
   return (
-    <div className="page-shell min-h-screen bg-transparent font-sans text-[#e2ddd6] p-2 sm:p-4 md:p-0 selection:bg-indigo-500/30">
+    <div className="page-shell min-h-screen bg-transparent font-sans text-[#e2ddd6] p-0 selection:bg-indigo-500/30">
       
       {/* ── Header ── */}
       <div className="savings-page-header flex items-start justify-between mb-8">
