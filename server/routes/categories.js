@@ -9,21 +9,21 @@ const toObj = (result) => result[0] ? result[0].values.map(row => {
   return obj;
 }) : [];
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const db = getDb();
-    const result = db.exec(`SELECT * FROM categories ORDER BY type, name`);
+    const result = await db.exec(`SELECT * FROM categories ORDER BY type, name`);
     res.json(toObj(result));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const db = getDb();
     const { name, icon, color, type } = req.body;
-    db.run(`INSERT INTO categories (name, icon, color, type) VALUES (?, ?, ?, ?)`,
+    await db.run(`INSERT INTO categories (name, icon, color, type) VALUES (?, ?, ?, ?)`,
       [name, icon || '📦', color || '#6366f1', type || 'expense']);
     saveDatabase();
     res.json({ message: 'Category created' });
@@ -32,10 +32,10 @@ router.post('/', (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const db = getDb();
-    db.run(`DELETE FROM categories WHERE id=?`, [req.params.id]);
+    await db.run(`DELETE FROM categories WHERE id=?`, [req.params.id]);
     saveDatabase();
     res.json({ message: 'Deleted' });
   } catch (err) {

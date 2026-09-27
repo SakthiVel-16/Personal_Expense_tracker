@@ -3,7 +3,7 @@ import { getDb, saveDatabase } from '../database/init.js';
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     // Prevent caching
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -39,7 +39,7 @@ router.get('/', (req, res) => {
     query += ` ORDER BY t.date DESC, t.created_at DESC LIMIT ? OFFSET ?`;
     const queryParams = [...whereParams, parseInt(limit), parseInt(offset)];
 
-    const result = db.exec(query, queryParams);
+    const result = await db.exec(query, queryParams);
     const rows = result[0] ? result[0].values.map(row => {
       const cols = result[0].columns;
       const obj = {};
@@ -49,7 +49,7 @@ router.get('/', (req, res) => {
       return obj;
     }) : [];
 
-    const countResult = db.exec(countQuery, whereParams);
+    const countResult = await db.exec(countQuery, whereParams);
     res.json({ transactions: rows, total: countResult[0]?.values[0][0] || 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'amount, type and date are required' });
     }
 
-    db.run(
+    await db.run(
       `INSERT INTO transactions (amount, type, category_id, description, date, payment_method, tags, notes, is_recurring, recurring_interval)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -85,7 +85,7 @@ router.post('/', async (req, res) => {
     );
 
     saveDatabase();
-    const result = db.exec(`SELECT last_insert_rowid() as id`);
+    const result = await db.exec(`SELECT last_insert_rowid() as id`);
     const id = result[0].values[0][0];
     console.log('Transaction inserted with id:', id);
     res.json({ id, message: 'Transaction added' });
@@ -95,7 +95,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const db = getDb();
     console.log('PUT body:', req.body);
@@ -105,7 +105,7 @@ router.put('/:id', (req, res) => {
       date, payment_method, tags, notes, is_recurring
     } = req.body;
 
-    db.run(
+    await db.run(
       `UPDATE transactions 
        SET amount=?, type=?, category_id=?, description=?, 
            date=?, payment_method=?, tags=?, notes=?, is_recurring=?
@@ -131,10 +131,10 @@ router.put('/:id', (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const db = getDb();
-    db.run(`DELETE FROM transactions WHERE id=?`, [req.params.id]);
+    await db.run(`DELETE FROM transactions WHERE id=?`, [req.params.id]);
     saveDatabase();
     res.json({ message: 'Deleted' });
   } catch (err) {

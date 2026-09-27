@@ -152,7 +152,7 @@ function ClassificationManager() {
       <p className="text-sm text-white/50 pb-3 border-b border-white/5 mb-3">
         Assign each expense category to a bucket to refine your 50/30/20 allocation.
       </p>
-      <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="space-y-2 max-h-[60dvh] overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {classifications.map(cat => (
           <div key={cat.id} className="bg-[#080c14] border border-white/5 rounded-xl p-3 flex items-center justify-between hover:bg-white/[0.03] transition-colors">
             <div className="flex items-center gap-3 min-w-0">
@@ -584,13 +584,13 @@ export default function Savings() {
     .reduce((acc, g) => acc + g.monthlyNeeded, 0);
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh] bg-[#050816]">
+    <div className="flex items-center justify-center min-h-[60dvh] bg-[#050816]">
       <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"/>
     </div>
   )
 
   return (
-    <div className="page-shell min-h-screen bg-[#050816] font-sans text-[#e2ddd6] -m-6 p-6 md:p-8 rounded-[35px] selection:bg-indigo-500/30">
+    <div className="page-shell min-h-screen bg-[#050816] font-sans text-[#e2ddd6] -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px] selection:bg-indigo-500/30">
       
       {/* ── Header ── */}
       <div className="savings-page-header flex items-start justify-between mb-8">

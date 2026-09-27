@@ -8,7 +8,7 @@ const toObj = (result) => result[0] ? result[0].values.map(row => {
   return obj;
 }) : [];
 
-router.get('/summary', (req, res) => {
+router.get('/summary', async (req, res) => {
   try {
     const db = getDb();
     const { start, end } = req.query;
@@ -16,19 +16,19 @@ router.get('/summary', (req, res) => {
     const s = start || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
     const e = end || now.toISOString().split('T')[0];
 
-    const totals = db.exec(`
+    const totals = await db.exec(`
       SELECT type, SUM(amount) as total FROM transactions
       WHERE date >= ? AND date <= ? GROUP BY type`, [s, e]);
-    const byCategory = db.exec(`
+    const byCategory = await db.exec(`
       SELECT c.name, c.icon, c.color, SUM(t.amount) as total, COUNT(*) as count
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY t.category_id ORDER BY total DESC`, [s, e]);
-    const daily = db.exec(`
+    const daily = await db.exec(`
       SELECT date, type, SUM(amount) as total FROM transactions
       WHERE date >= ? AND date <= ?
       GROUP BY date, type ORDER BY date ASC`, [s, e]);
-    const topExpenses = db.exec(`
+    const topExpenses = await db.exec(`
       SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color
       FROM transactions t LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
@@ -41,11 +41,11 @@ router.get('/summary', (req, res) => {
     });
 
     // Detect anomalies (z-score)
-    const allAmounts = db.exec(`SELECT amount FROM transactions WHERE type='expense' AND date >= ? AND date <= ?`, [s, e]);
+    const allAmounts = await db.exec(`SELECT amount FROM transactions WHERE type='expense' AND date >= ? AND date <= ?`, [s, e]);
     const amounts = allAmounts[0] ? allAmounts[0].values.map(r => r[0]) : [];
     const mean = amounts.length ? amounts.reduce((a, b) => a + b, 0) / amounts.length : 0;
     const std = amounts.length > 1 ? Math.sqrt(amounts.map(x => (x - mean) ** 2).reduce((a, b) => a + b) / amounts.length) : 0;
-    const anomalies = db.exec(`
+    const anomalies = await db.exec(`
       SELECT t.*, c.name as category_name FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.type='expense' AND t.date >= ? AND t.date <= ?`, [s, e]);
@@ -53,8 +53,8 @@ router.get('/summary', (req, res) => {
 
     // Health score
     const savingsRate = income > 0 ? ((income - expense) / income) * 100 : (expense > 0 ? -100 : 0);
-    const budgetResult = db.exec(`SELECT COUNT(*) as total FROM budgets`);
-    const overBudgetResult = db.exec(`
+    const budgetResult = await db.exec(`SELECT COUNT(*) as total FROM budgets`);
+    const overBudgetResult = await db.exec(`
       SELECT COUNT(*) as over FROM budgets b WHERE
       (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE category_id=b.category_id AND type='expense' AND date >= ?) > b.amount`, [s]);
     const totalBudgets = budgetResult[0] ? budgetResult[0].values[0][0] : 0;
@@ -78,10 +78,10 @@ router.get('/summary', (req, res) => {
   }
 });
 
-router.get('/recurring', (req, res) => {
+router.get('/recurring', async (req, res) => {
   try {
     const db = getDb();
-    const result = db.exec(`
+    const result = await db.exec(`
       SELECT description, amount, COUNT(*) as occurrences,
         AVG(amount) as avg_amount, MAX(date) as last_date
       FROM transactions WHERE is_recurring=1
@@ -96,7 +96,7 @@ router.get('/recurring', (req, res) => {
 });
 
 
-router.get('/velocity', (req, res) => {
+router.get('/velocity', async (req, res) => {
   try {
     const db = getDb()
     const { start, end } = req.query
@@ -114,7 +114,7 @@ router.get('/velocity', (req, res) => {
     const prevEndStr = prevEnd.toISOString().split('T')[0]
 
     // Current period totals by category
-    const current = toObj(db.exec(`
+    const current = toObj(await db.exec(`
       SELECT c.name, c.icon, c.color, SUM(t.amount) as total
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type = 'expense'
@@ -122,7 +122,7 @@ router.get('/velocity', (req, res) => {
     ))
 
     // Previous period totals by category
-    const previous = toObj(db.exec(`
+    const previous = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type = 'expense'

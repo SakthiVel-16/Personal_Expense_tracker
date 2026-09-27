@@ -6,18 +6,18 @@ const toObj = (r) => r[0] ? r[0].values.map(row => {
   const obj = {}; r[0].columns.forEach((c, i) => obj[c] = row[i]); return obj;
 }) : [];
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const db = getDb();
     
     // Get manual net worth items
-    const items = toObj(db.exec(`SELECT * FROM net_worth ORDER BY type, name`));
+    const items = toObj(await db.exec(`SELECT * FROM net_worth ORDER BY type, name`));
     const manualAssets = items.filter(i => i.type === 'asset').reduce((s, i) => s + i.amount, 0);
     const manualLiabilities = items.filter(i => i.type === 'liability').reduce((s, i) => s + i.amount, 0);
     
     // Calculate dynamic net worth from transactions (all time)
-    const incomeResult = db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'income'`);
-    const expenseResult = db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'expense'`);
+    const incomeResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'income'`);
+    const expenseResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'expense'`);
     
     const totalIncome = incomeResult[0]?.values[0]?.[0] || 0;
     const totalExpense = expenseResult[0]?.values[0]?.[0] || 0;
@@ -41,11 +41,11 @@ router.get('/', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const db = getDb();
     const { name, type, amount, category, date, notes } = req.body;
-    db.run(`INSERT INTO net_worth (name, type, amount, category, date, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+    await db.run(`INSERT INTO net_worth (name, type, amount, category, date, notes) VALUES (?, ?, ?, ?, ?, ?)`,
       [name, type, amount, category || 'other', date || new Date().toISOString().split('T')[0], notes]);
     saveDatabase();
     res.json({ message: 'Added' });
@@ -54,11 +54,11 @@ router.post('/', (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const db = getDb();
     const { name, amount, category, notes } = req.body;
-    db.run(`UPDATE net_worth SET name=?, amount=?, category=?, notes=? WHERE id=?`,
+    await db.run(`UPDATE net_worth SET name=?, amount=?, category=?, notes=? WHERE id=?`,
       [name, amount, category, notes, req.params.id]);
     saveDatabase();
     res.json({ message: 'Updated' });
@@ -67,10 +67,10 @@ router.put('/:id', (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const db = getDb();
-    db.run(`DELETE FROM net_worth WHERE id=?`, [req.params.id]);
+    await db.run(`DELETE FROM net_worth WHERE id=?`, [req.params.id]);
     saveDatabase();
     res.json({ message: 'Deleted' });
   } catch (err) {

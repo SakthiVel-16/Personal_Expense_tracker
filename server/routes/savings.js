@@ -10,10 +10,10 @@ const toObj = (r) => r[0] ? r[0].values.map(row => {
 }) : [];
 
 // Get all goals
-router.get('/goals', (req, res) => {
+router.get('/goals', async (req, res) => {
   try {
     const db = getDb()
-    const goals = toObj(db.exec(`
+    const goals = toObj(await db.exec(`
       SELECT g.*,
         COALESCE((
           SELECT SUM(amount) FROM savings_contributions 
@@ -100,11 +100,11 @@ router.get('/goals', (req, res) => {
 })
 
 // Create goal
-router.post('/goals', (req, res) => {
+router.post('/goals', async (req, res) => {
   try {
     const db = getDb()
     const { name, icon, target_amount, deadline, color, category, notes } = req.body
-    db.run(
+    await db.run(
       `INSERT INTO savings_goals 
        (name, icon, target_amount, deadline, color, category, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -120,11 +120,11 @@ router.post('/goals', (req, res) => {
 })
 
 // Update goal
-router.put('/goals/:id', (req, res) => {
+router.put('/goals/:id', async (req, res) => {
   try {
     const db = getDb()
     const { name, icon, target_amount, deadline, color, notes, is_completed, category } = req.body
-    db.run(
+    await db.run(
       `UPDATE savings_goals 
        SET name=?, icon=?, target_amount=?,
        deadline=?, color=?, notes=?, 
@@ -142,11 +142,11 @@ router.put('/goals/:id', (req, res) => {
 })
 
 // Delete goal
-router.delete('/goals/:id', (req, res) => {
+router.delete('/goals/:id', async (req, res) => {
   try {
     const db = getDb()
-    db.run(`DELETE FROM savings_contributions WHERE goal_id=?`, [req.params.id])
-    db.run(`DELETE FROM savings_goals WHERE id=?`, [req.params.id])
+    await db.run(`DELETE FROM savings_contributions WHERE goal_id=?`, [req.params.id])
+    await db.run(`DELETE FROM savings_goals WHERE id=?`, [req.params.id])
     saveDatabase()
     res.json({ message: 'Deleted' })
   } catch (err) {
@@ -155,11 +155,11 @@ router.delete('/goals/:id', (req, res) => {
 })
 
 // Add contribution
-router.post('/goals/:id/contribute', (req, res) => {
+router.post('/goals/:id/contribute', async (req, res) => {
   try {
     const db = getDb()
     const { amount, note, date } = req.body
-    db.run(
+    await db.run(
       `INSERT INTO savings_contributions (goal_id, amount, note, date)
        VALUES (?, ?, ?, ?)`,
       [req.params.id, amount, note || '',
@@ -167,7 +167,7 @@ router.post('/goals/:id/contribute', (req, res) => {
     )
 
     // Auto complete if reached target
-    const result = db.exec(`
+    const result = await db.exec(`
       SELECT g.target_amount,
         COALESCE((
           SELECT SUM(amount) 
@@ -180,7 +180,7 @@ router.post('/goals/:id/contribute', (req, res) => {
     if (result[0]) {
       const [target, total] = result[0].values[0]
       if (total >= target) {
-        db.run(`UPDATE savings_goals SET is_completed=1 WHERE id=?`,
+        await db.run(`UPDATE savings_goals SET is_completed=1 WHERE id=?`,
           [req.params.id])
       }
     }
@@ -193,10 +193,10 @@ router.post('/goals/:id/contribute', (req, res) => {
 })
 
 // Get contribution history
-router.get('/goals/:id/history', (req, res) => {
+router.get('/goals/:id/history', async (req, res) => {
   try {
     const db = getDb()
-    const result = db.exec(
+    const result = await db.exec(
       `SELECT * FROM savings_contributions 
        WHERE goal_id=? ORDER BY date DESC`,
       [req.params.id]
@@ -208,7 +208,7 @@ router.get('/goals/:id/history', (req, res) => {
 })
 
 // Overview — health score, 50/30/20, history
-router.get('/overview', (req, res) => {
+router.get('/overview', async (req, res) => {
   try {
     const db = getDb()
     const now = new Date()
@@ -224,7 +224,7 @@ router.get('/overview', (req, res) => {
       const end = `${y}-${m}-${lastDay}`
       const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' })
 
-      const totals = toObj(db.exec(
+      const totals = toObj(await db.exec(
         `SELECT type, SUM(amount) as total FROM transactions
          WHERE date >= ? AND date <= ? GROUP BY type`,
         [start, end]
@@ -250,13 +250,13 @@ router.get('/overview', (req, res) => {
     const currEnd = reqEnd || now.toISOString().split('T')[0]
 
     // Load classifications from DB
-    const classifications = toObj(db.exec(
+    const classifications = toObj(await db.exec(
       `SELECT category_name, bucket FROM category_classification`
     ))
     const bucketMap = {}
     classifications.forEach(c => bucketMap[c.category_name] = c.bucket)
 
-    const allExpenses = toObj(db.exec(`
+    const allExpenses = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
       FROM transactions t
       JOIN categories c ON t.category_id = c.id
@@ -264,7 +264,7 @@ router.get('/overview', (req, res) => {
       GROUP BY c.name`, [currStart, currEnd]
     ))
 
-    const currIncome = toObj(db.exec(
+    const currIncome = toObj(await db.exec(
       `SELECT SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? AND type='income'`,
       [currStart, currEnd]
@@ -286,7 +286,7 @@ router.get('/overview', (req, res) => {
     const consistencyScore = (positiveMonths / months.length) * 100
 
     // Budget adherence
-    const budgets = toObj(db.exec(`
+    const budgets = toObj(await db.exec(`
       SELECT b.amount,
         COALESCE((
           SELECT SUM(t.amount) FROM transactions t
@@ -326,11 +326,11 @@ router.get('/overview', (req, res) => {
       healthLevel,
       healthColor,
       goalStats: {
-        total: toObj(db.exec(`SELECT COUNT(*) as c FROM savings_goals`))[0]?.c || 0,
-        completed: toObj(db.exec(
+        total: toObj(await db.exec(`SELECT COUNT(*) as c FROM savings_goals`))[0]?.c || 0,
+        completed: toObj(await db.exec(
           `SELECT COUNT(*) as c FROM savings_goals WHERE is_completed=1`
         ))[0]?.c || 0,
-        total_contributed: toObj(db.exec(
+        total_contributed: toObj(await db.exec(
           `SELECT COALESCE(SUM(amount),0) as c FROM savings_contributions`
         ))[0]?.c || 0
       },
@@ -352,7 +352,7 @@ router.get('/overview', (req, res) => {
 })
 
 // Money leak detector
-router.get('/leaks', (req, res) => {
+router.get('/leaks', async (req, res) => {
   try {
     const db = getDb()
     const now = new Date()
@@ -368,7 +368,7 @@ router.get('/leaks', (req, res) => {
     const prevEndStr = prevEnd.toISOString().split('T')[0]
 
     // High frequency low-value transactions this month
-    const frequent = toObj(db.exec(`
+    const frequent = toObj(await db.exec(`
       SELECT t.description, c.name as category,
         COUNT(*) as count, 
         SUM(t.amount) as total,
@@ -384,7 +384,7 @@ router.get('/leaks', (req, res) => {
     ))
 
     // Categories growing vs last month
-    const currCats = toObj(db.exec(`
+    const currCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total
       FROM transactions t 
       JOIN categories c ON t.category_id = c.id
@@ -392,7 +392,7 @@ router.get('/leaks', (req, res) => {
       GROUP BY c.name`, [currStart, currEnd]
     ))
 
-    const prevCats = toObj(db.exec(`
+    const prevCats = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
       FROM transactions t 
       JOIN categories c ON t.category_id = c.id
@@ -414,7 +414,7 @@ router.get('/leaks', (req, res) => {
       .slice(0, 3)
 
     // Subscriptions (marked as recurring in DB)
-    const subscriptions = toObj(db.exec(`
+    const subscriptions = toObj(await db.exec(`
       SELECT description, 
         COUNT(*) as months,
         AVG(amount) as avg_amount,
@@ -434,7 +434,7 @@ router.get('/leaks', (req, res) => {
 })
 
 // Savings challenges — generated from spending data
-router.get('/challenges', (req, res) => {
+router.get('/challenges', async (req, res) => {
   try {
     const db = getDb()
     const now = new Date()
@@ -442,7 +442,7 @@ router.get('/challenges', (req, res) => {
     const currEnd = now.toISOString().split('T')[0]
 
     // Get top spending categories
-    const topCats = toObj(db.exec(`
+    const topCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total,
         COUNT(*) as count
       FROM transactions t
@@ -549,7 +549,7 @@ router.post('/ai-insight', async (req, res) => {
     const currStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
     const currEnd = now.toISOString().split('T')[0]
 
-    const totals = toObj(db.exec(
+    const totals = toObj(await db.exec(
       `SELECT type, SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? GROUP BY type`,
       [currStart, currEnd]
@@ -560,7 +560,7 @@ router.post('/ai-insight', async (req, res) => {
       if (r.type === 'expense') expense = r.total
     })
 
-    const byCategory = toObj(db.exec(`
+    const byCategory = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total, COUNT(*) as count
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
@@ -568,7 +568,7 @@ router.post('/ai-insight', async (req, res) => {
       [currStart, currEnd]
     ))
 
-    const goals = toObj(db.exec(`
+    const goals = toObj(await db.exec(`
       SELECT g.name, g.target_amount, g.deadline,
         COALESCE((
           SELECT SUM(amount) FROM savings_contributions 
@@ -625,12 +625,12 @@ Return raw JSON only:
 })
 
 // Get all category classifications
-router.get('/classifications', (req, res) => {
+router.get('/classifications', async (req, res) => {
   try {
     const db = getDb()
     // Get all categories with their current classification
-    const cats = toObj(db.exec(`SELECT * FROM categories ORDER BY type, name`))
-    const classifications = toObj(db.exec(
+    const cats = toObj(await db.exec(`SELECT * FROM categories ORDER BY type, name`))
+    const classifications = toObj(await db.exec(
       `SELECT * FROM category_classification`
     ))
     const classMap = {}
@@ -647,12 +647,12 @@ router.get('/classifications', (req, res) => {
 })
 
 // Update category classification
-router.put('/classifications/:name', (req, res) => {
+router.put('/classifications/:name', async (req, res) => {
   try {
     const db = getDb()
     const { bucket } = req.body
     const name = decodeURIComponent(req.params.name)
-    db.run(
+    await db.run(
       `INSERT INTO category_classification (category_name, bucket)
        VALUES (?, ?)
        ON CONFLICT(category_name) DO UPDATE SET bucket = ?`,

@@ -161,7 +161,7 @@ export default function NetWorth() {
   const ratio = data.assets > 0 ? Math.min((data.liabilities / data.assets) * 100, 100) : 0
 
   return (
-    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -mx-3 -my-3 p-4 sm:-mx-4 sm:-my-4 md:m-0 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />

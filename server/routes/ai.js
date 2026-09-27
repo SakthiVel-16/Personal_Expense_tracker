@@ -61,7 +61,7 @@ router.post('/insights', async (req, res) => {
     console.log('AI insights range:', s, 'to', e)
 
     // No cache — fetch from Gemini
-    const transactions = toObj(db.exec(`
+    const transactions = toObj(await db.exec(`
       SELECT t.amount, t.type, t.description, t.date, c.name as category
       FROM transactions t LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? ORDER BY t.date DESC LIMIT 100`,
@@ -75,7 +75,7 @@ router.post('/insights', async (req, res) => {
       })
     }
 
-    const totals = toObj(db.exec(
+    const totals = toObj(await db.exec(
       `SELECT type, SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? GROUP BY type`, [s, e]
     ))
@@ -85,7 +85,7 @@ router.post('/insights', async (req, res) => {
       if (r.type === 'expense') expense = r.total
     })
 
-    const byCategory = toObj(db.exec(`
+    const byCategory = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total, COUNT(*) as count
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
@@ -143,14 +143,14 @@ router.post('/chat', async (req, res) => {
     const { message, start, end } = req.body
     const { s, e } = getDefaultRange(start, end)
 
-    const transactions = toObj(db.exec(`
+    const transactions = toObj(await db.exec(`
       SELECT t.amount, t.type, t.description, t.date, c.name as category
       FROM transactions t LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? ORDER BY t.date DESC LIMIT 50`,
       [s, e]
     ))
 
-    const totals = toObj(db.exec(
+    const totals = toObj(await db.exec(
       `SELECT type, SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? GROUP BY type`, [s, e]
     ))
@@ -160,7 +160,7 @@ router.post('/chat', async (req, res) => {
       if (r.type === 'expense') expense = r.total
     })
 
-    const byCategory = toObj(db.exec(`
+    const byCategory = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
@@ -193,10 +193,10 @@ Answer in 2-4 sentences using their actual data. Use ₹. Be friendly and specif
   }
 })
 
-router.get('/insights/history', (req, res) => {
+router.get('/insights/history', async (req, res) => {
   try {
     const db = getDb()
-    const result = db.exec(`SELECT * FROM ai_insights ORDER BY created_at DESC LIMIT 10`)
+    const result = await db.exec(`SELECT * FROM ai_insights ORDER BY created_at DESC LIMIT 10`)
     res.json(toObj(result))
   } catch (err) {
     res.status(500).json({ error: err.message })

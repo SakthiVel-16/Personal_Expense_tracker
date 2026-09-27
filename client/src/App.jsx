@@ -11,6 +11,8 @@ import AICoach from './pages/AICoach.jsx'
 import NetWorth from './pages/NetWorth.jsx'
 import { DateProvider } from './context/DateContext.jsx'
 import Savings from './pages/Savings.jsx'
+import Login from './pages/Login.jsx'
+import api from './lib/api.js'
 
 const pageTitles = {
   '/': 'Dashboard',
@@ -29,6 +31,14 @@ function Layout() {
 
   useEffect(() => {
     setSidebarOpen(false)
+    if (!sessionStorage.getItem('tabSession')) {
+      // If we open a new tab, force logout to clear cookies
+      api.post('/auth/logout').then(() => {
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }).catch(() => {})
+    }
   }, [location.pathname])
 
   return (
@@ -36,7 +46,7 @@ function Layout() {
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="mobile-menu-button md:hidden fixed left-3 top-3 z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
+        className="mobile-menu-button md:hidden fixed z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -72,7 +82,10 @@ function Layout() {
 export default function App() {
   return (
     <DateProvider>
-      <Layout />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Layout />} />
+      </Routes>
     </DateProvider>
   )
 }

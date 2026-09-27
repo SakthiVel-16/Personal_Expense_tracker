@@ -2,7 +2,10 @@ import './env.js'; // loads .env before anything else
 import savingsRouter from './routes/savings.js';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { initializeDatabase } from './database/init.js';
+import { requireAuth } from './middleware/auth.js';
+import authRouter from './routes/auth.js';
 import transactionsRouter from './routes/transactions.js';
 import categoriesRouter from './routes/categories.js';
 import budgetsRouter from './routes/budgets.js';
@@ -13,16 +16,26 @@ import exportRouter from './routes/export.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true // Allow cookies to be sent
+}));
 app.use(express.json());
-app.use('/api/savings', savingsRouter);
-app.use('/api/transactions', transactionsRouter);
-app.use('/api/categories', categoriesRouter);
-app.use('/api/budgets', budgetsRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/ai', aiRouter);
-app.use('/api/networth', netWorthRouter);
-app.use('/api/export', exportRouter);
+app.use(cookieParser());
+
+// Public routes
+app.use('/api/auth', authRouter);
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Protected routes
+app.use('/api/savings', requireAuth, savingsRouter);
+app.use('/api/transactions', requireAuth, transactionsRouter);
+app.use('/api/categories', requireAuth, categoriesRouter);
+app.use('/api/budgets', requireAuth, budgetsRouter);
+app.use('/api/analytics', requireAuth, analyticsRouter);
+app.use('/api/ai', requireAuth, aiRouter);
+app.use('/api/networth', requireAuth, netWorthRouter);
+app.use('/api/export', requireAuth, exportRouter);
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 5000;

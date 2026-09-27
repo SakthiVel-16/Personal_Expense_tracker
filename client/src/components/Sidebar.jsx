@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, ArrowLeftRight, Target,
-  BarChart3, Bot, TrendingUp, Wallet,PiggyBank } from 'lucide-react'
+  BarChart3, Bot, TrendingUp, Wallet,PiggyBank, LogOut } from 'lucide-react'
+import api from '../lib/api.js'
 
 
 const links = [
@@ -55,11 +56,18 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-5 md:px-8 md:py-6 border-t border-white/5 bg-white/[0.01]">
+      <div className="px-5 py-5 md:px-8 md:py-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"/>
           <p className="text-white/30 text-[9px] md:text-[10px] uppercase font-bold tracking-widest">Built for Sakthi</p>
         </div>
+        <button 
+          onClick={async () => { await api.post('/auth/logout'); window.location.href = '/login'; }}
+          className="text-white/40 hover:text-rose-400 transition-colors p-2 rounded-xl hover:bg-white/5"
+          title="Logout"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   )

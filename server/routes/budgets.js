@@ -8,7 +8,7 @@ const toObj = (result) => result[0] ? result[0].values.map(row => {
   return obj;
 }) : [];
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const db = getDb();
     const { start, end } = req.query;
@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
     const startDate = start || defaultStart;
     const endDate = end || defaultEnd;
 
-    const result = db.exec(`
+    const result = await db.exec(`
       SELECT b.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
         COALESCE((
           SELECT SUM(t.amount) FROM transactions t
@@ -44,11 +44,11 @@ router.get('/', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const db = getDb();
     const { category_id, amount, period, alert_threshold } = req.body;
-    db.run(`INSERT INTO budgets (category_id, amount, period, alert_threshold) VALUES (?, ?, ?, ?)`,
+    await db.run(`INSERT INTO budgets (category_id, amount, period, alert_threshold) VALUES (?, ?, ?, ?)`,
       [category_id, amount, period || 'monthly', alert_threshold || 80]);
     saveDatabase();
     res.json({ message: 'Budget created' });
@@ -57,11 +57,11 @@ router.post('/', (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const db = getDb();
     const { category_id, amount, period, alert_threshold } = req.body;
-    db.run(`UPDATE budgets SET category_id=?, amount=?, period=?, alert_threshold=? WHERE id=?`,
+    await db.run(`UPDATE budgets SET category_id=?, amount=?, period=?, alert_threshold=? WHERE id=?`,
       [category_id, amount, period, alert_threshold, req.params.id]);
     saveDatabase();
     res.json({ message: 'Updated' });
@@ -70,10 +70,10 @@ router.put('/:id', (req, res) => {
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const db = getDb();
-    db.run(`DELETE FROM budgets WHERE id=?`, [req.params.id]);
+    await db.run(`DELETE FROM budgets WHERE id=?`, [req.params.id]);
     saveDatabase();
     res.json({ message: 'Deleted' });
   } catch (err) {

@@ -46,7 +46,7 @@ export default function TopBar({ title }) {
 
           {open && (
             <div className="absolute right-0 top-[calc(100%+8px)] w-64 sm:w-72 bg-[#050816]/95 backdrop-blur-3xl border border-white/10
-              rounded-[24px] shadow-2xl shadow-black/80 z-50 overflow-hidden max-h-[80vh] overflow-y-auto">
+              rounded-[24px] shadow-2xl shadow-black/80 z-50 overflow-hidden max-h-[80dvh] overflow-y-auto">
 
               {/* Presets */}
               <div className="p-3">
