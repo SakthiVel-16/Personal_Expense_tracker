@@ -91,7 +91,7 @@ export default function Analytics() {
     : 'Serious lifestyle creep 🚨'
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -107,7 +107,7 @@ export default function Analytics() {
       </div>
       
       {/* SECTION 1: KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="analytics-kpis grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label:'Total Inflow', value: fmt(income), color:'text-teal-400', border: 'border-teal-500/20' },
           { label:'Total Outflow', value: fmt(expense), color:'text-rose-400', border: 'border-rose-500/20' },
@@ -125,7 +125,7 @@ export default function Analytics() {
       </div>
 
       {/* SECTION 2: Spending Velocity & By Category */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="analytics-panels grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Spending Velocity */}
         <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] p-8 hover:border-white/10 transition-colors duration-500 min-h-[500px] flex flex-col">
@@ -159,20 +159,20 @@ export default function Analytics() {
 
           {velocity?.categories?.length > 0 && (
             <div className="space-y-2">
-              <div className="grid grid-cols-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 px-4 mb-4">
+              <div className="analytics-velocity-heading grid grid-cols-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 px-4 mb-4">
                 <span className="col-span-2">Category</span>
                 <span className="text-right">Previous</span>
                 <span className="text-right">Current</span>
                 <span className="text-right">Velocity</span>
                 <span className="text-right">Trend</span>
               </div>
-              <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              <div className="analytics-velocity-list space-y-2 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {velocity.categories.map((cat, i) => {
                   const previousAmount = cat.previousAmount && cat.previousAmount > 0 ? cat.previousAmount : (cat.total && cat.velocity !== null ? Math.round(cat.total / (1 + (cat.velocity || 0)/100)) : 0)
                   const currentAmount = cat.total || 0
                   return (
                     <div key={i}
-                      className="grid grid-cols-6 items-center bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 border border-transparent hover:border-white/10 rounded-2xl px-5 py-4 group">
+                      className="analytics-velocity-row grid grid-cols-6 items-center bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 border border-transparent hover:border-white/10 rounded-2xl px-5 py-4 group">
                       <div className="col-span-2 flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/5 flex items-center justify-center text-sm shadow-inner shrink-0 group-hover:scale-110 transition-transform">
                           {cat.icon}

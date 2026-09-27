@@ -31,6 +31,8 @@ html {
 
 html, body, #root {
   min-height: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
   min-height: 100dvh;
 }
 
@@ -90,15 +92,6 @@ select {
 select option {
   background-color: #111827;
   color: #e2e8f0;
-}
-
-@supports (padding: max(0px)) {
-  body {
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
-    padding-top: max(0.25rem, env(safe-area-inset-top));
-    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
-  }
 }
 
 @media (max-width: 767px) {

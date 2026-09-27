@@ -590,10 +590,10 @@ export default function Savings() {
   )
 
   return (
-    <div className="min-h-screen bg-[#050816] font-sans text-[#e2ddd6] -m-6 p-6 md:p-8 rounded-[35px] selection:bg-indigo-500/30">
+    <div className="page-shell min-h-screen bg-[#050816] font-sans text-[#e2ddd6] -m-6 p-6 md:p-8 rounded-[35px] selection:bg-indigo-500/30">
       
       {/* ── Header ── */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="savings-page-header flex items-start justify-between mb-8">
         <div>
           <div className="text-xs tracking-[0.22em] text-[#4a5568] uppercase font-medium mb-2">Your wealth journey</div>
           <h1 className="font-serif text-[30px] text-[#f5f0e8] leading-[1.15] font-normal">
@@ -609,7 +609,7 @@ export default function Savings() {
       </div>
 
       {/* ── Pulse Row ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-7">
+      <div className="savings-pulse-row grid grid-cols-1 md:grid-cols-3 gap-3 mb-7">
         <div className="bg-[#110f1c] border border-indigo-500/20 rounded-[16px] p-4">
           <div className="text-xs tracking-[0.14em] text-[#3d4660] uppercase font-semibold mb-2">Saved this month</div>
           <div className="font-serif text-[22px] text-indigo-400 leading-none">{fmt(latestMonth?.saved || 0)}</div>

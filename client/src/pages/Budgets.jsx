@@ -206,7 +206,7 @@ export default function Budgets() {
   const healthyCount = budgets.filter(b => !b.is_over && b.percentage < b.alert_threshold).length
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -226,7 +226,7 @@ export default function Budgets() {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="budget-summary grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { label: 'Total Allocated', value: fmt(totalBudget), color: 'text-white', border: 'border-white/10' },
             { label: 'Total Consumed', value: fmt(totalSpent), color: 'text-rose-400', border: 'border-rose-500/20' },
@@ -287,7 +287,7 @@ export default function Budgets() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="budget-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {budgets.map(b => (
               <BudgetCard key={b.id} budget={b} 
                 onEdit={(budget) => { setEditBudget(budget); setShowModal(true); }}

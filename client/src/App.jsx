@@ -32,11 +32,11 @@ function Layout() {
   }, [location.pathname])
 
   return (
-    <div className="flex min-h-[100dvh] bg-[#0f1117] text-slate-100">
+    <div className="app-shell flex min-h-[100dvh] bg-[#0f1117] text-slate-100">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden fixed left-3 top-3 z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
+        className="mobile-menu-button md:hidden fixed left-3 top-3 z-[60] p-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-white shadow-lg backdrop-blur-md"
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -45,7 +45,7 @@ function Layout() {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main content */}
-      <main className="flex-1 min-h-[100dvh] overflow-y-auto p-3 pt-16 sm:p-4 md:ml-64 md:p-8 md:pt-8">
+      <main className="app-main flex-1 min-h-[100dvh] overflow-y-auto p-3 pt-16 sm:p-4 md:ml-64 md:p-8 md:pt-8">
         <TopBar title={title} />
         <Routes>
           <Route path="/" element={<Dashboard />} />

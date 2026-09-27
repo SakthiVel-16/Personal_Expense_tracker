@@ -16,7 +16,7 @@ const links = [
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   return (
-    <aside className={`fixed top-0 left-0 h-[100dvh] w-[82vw] max-w-[18rem] bg-[#050816]/85 backdrop-blur-3xl border-r border-white/5 flex flex-col z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 md:translate-x-0 md:w-64 ${
+    <aside className={`app-sidebar fixed top-0 left-0 h-[100dvh] w-[82vw] max-w-[18rem] bg-[#050816]/85 backdrop-blur-3xl border-r border-white/5 flex flex-col z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 md:translate-x-0 md:w-64 ${
       sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
     }`}>
       {/* Logo */}

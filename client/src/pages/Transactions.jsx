@@ -242,7 +242,7 @@ export default function Transactions() {
   const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
 
   return (
-    <div className="relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
+    <div className="page-shell relative min-h-screen bg-[#050816] overflow-hidden -m-6 p-6 md:p-8 rounded-[35px]">
       {/* Cinematic Ambient Lighting System */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
@@ -263,7 +263,7 @@ export default function Transactions() {
         </div>
 
         {/* Summary strip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="transaction-summary grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { label: 'Total Inflow', value: fmt(income), color: 'text-teal-400', border: 'border-teal-500/20' },
             { label: 'Total Outflow', value: fmt(expense), color: 'text-rose-400', border: 'border-rose-500/20' },
@@ -327,7 +327,7 @@ export default function Transactions() {
           ) : (
             <div className="divide-y divide-white/5">
               {transactions.map(t => (
-                <div key={t.id} className="flex items-center gap-5 px-8 py-5 hover:bg-white/[0.04] transition-all duration-300 group">
+                <div key={t.id} className="transaction-row flex items-center gap-5 px-8 py-5 hover:bg-white/[0.04] transition-all duration-300 group">
                   {/* Icon */}
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300"
                     style={{ background: `${t.category_color}15`, color: t.category_color }}>
@@ -335,7 +335,7 @@ export default function Transactions() {
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="transaction-info flex-1 min-w-0">
                     <p className="text-white/90 text-base font-bold truncate tracking-wide">
                       {t.description || 'No description'}
                       {t.is_recurring ? <span className="ml-2 text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full uppercase tracking-wider">↻ Auto</span> : null}
@@ -350,14 +350,14 @@ export default function Transactions() {
                   </div>
 
                   {/* Amount */}
-                  <p className={`text-xl font-black tracking-tighter shrink-0 ${
+                  <p className={`transaction-amount text-xl font-black tracking-tighter shrink-0 ${
                     t.type === 'income' ? 'text-teal-400' : 'text-white'
                   }`}>
                     {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
                   </p>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                  <div className="transaction-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
                     <button onClick={() => { setEditItem(t); setShowModal(true) }}
                       className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center
                       text-white/40 hover:bg-white/10 hover:text-white transition-all">
