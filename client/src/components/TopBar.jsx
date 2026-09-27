@@ -45,7 +45,7 @@ export default function TopBar({ title }) {
           </button>
 
           {open && (
-            <div className="absolute right-0 top-[calc(100%+8px)] w-64 sm:w-72 bg-[#050816]/95 backdrop-blur-3xl border border-white/10
+            <div className="absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-32px)] sm:w-72 max-w-sm bg-[#050816]/95 backdrop-blur-3xl border border-white/10
               rounded-[24px] shadow-2xl shadow-black/80 z-50 overflow-hidden max-h-[80dvh] overflow-y-auto">
 
               {/* Presets */}

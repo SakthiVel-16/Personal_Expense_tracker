@@ -37,12 +37,16 @@ export default function AICoach() {
   })
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
-  const [mobileInsightsOpen, setMobileInsightsOpen] = useState(false)
   const { range } = useDateRange()
-  const bottomRef = useRef(null)
+  const messagesContainerRef = useRef(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
   }, [messages])
 
   const generateInsights = async () => {
@@ -51,7 +55,6 @@ export default function AICoach() {
       const r = await api.post('/ai/insights', { start: range.start, end: range.end })
       setInsights(r.data)
       sessionStorage.setItem('ai_insights', JSON.stringify(r.data))
-      setMobileInsightsOpen(true)
     } catch (e) {
       console.error(e)
       alert('AI Error: ' + (e.response?.data?.error || e.message))
@@ -178,12 +181,13 @@ export default function AICoach() {
       <div className="absolute top-[-15%] right-[10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute bottom-[-15%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[180px] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col lg:flex-row gap-5" style={{ height: 'calc(100dvh - 140px)' }}>
+      {/* Main Container - stacked on mobile, row on desktop */}
+      <div className="relative z-10 flex flex-col lg:flex-row gap-5 h-[calc(100vh-140px)] min-h-[600px] lg:min-h-0">
 
         {/* ═══════════════════════════════════════
-            CHAT PANEL — full width on mobile, flex-1 on desktop
+            CHAT PANEL 
             ═══════════════════════════════════════ */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+        <div className="flex-1 min-w-0 flex flex-col min-h-[500px] lg:min-h-0 bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
 
             {/* Chat Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
@@ -201,25 +205,6 @@ export default function AICoach() {
               </div>
 
               <div className="flex items-center gap-1.5">
-                {/* Mobile: Generate Insights button in header */}
-                <button onClick={generateInsights} disabled={loading}
-                  className="lg:hidden flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/15 transition-all">
-                  {loading
-                    ? <div className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-                    : <Sparkles className="w-3 h-3" />
-                  }
-                  <span className="hidden sm:inline">Insights</span>
-                </button>
-
-                {/* Mobile: View insights (when available) */}
-                {insights && (
-                  <button onClick={() => setMobileInsightsOpen(true)}
-                    className="lg:hidden flex items-center gap-1.5 text-emerald-400 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-all">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="hidden sm:inline">View</span>
-                  </button>
-                )}
-
                 {hasMessages && (
                   <button onClick={clearChat}
                     className="flex items-center gap-1 text-white/30 hover:text-white/70 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg hover:bg-white/[0.05] transition-all"
@@ -231,7 +216,7 @@ export default function AICoach() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto min-h-0" ref={messagesContainerRef}>
               {!hasMessages ? (
                 /* Welcome + Suggestions */
                 <div className="flex flex-col items-center justify-center h-full px-5 py-6">
@@ -286,7 +271,6 @@ export default function AICoach() {
                       </div>
                     </div>
                   )}
-                  <div ref={bottomRef} />
                 </div>
               )}
             </div>
@@ -315,47 +299,12 @@ export default function AICoach() {
           </div>
 
         {/* ═══════════════════════════════════════
-            DESKTOP INSIGHTS SIDEBAR — hidden on mobile
+            INSIGHTS SIDEBAR
             ═══════════════════════════════════════ */}
-        <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] shrink-0 flex-col h-full min-h-0">
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 flex-col h-[500px] lg:h-full min-h-0 pb-8 lg:pb-0">
           <InsightsContent />
         </div>
       </div>
-
-      {/* ═══════════════════════════════════════
-          MOBILE INSIGHTS OVERLAY — only visible when opened on mobile
-          ═══════════════════════════════════════ */}
-      {mobileInsightsOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileInsightsOpen(false)} />
-
-          {/* Panel */}
-          <div className="relative z-10 flex flex-col mt-auto max-h-[85dvh] bg-[#0c1020] border-t border-white/10 rounded-t-3xl overflow-hidden shadow-2xl">
-            {/* Handle bar */}
-            <div className="flex items-center justify-center py-3 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pb-4 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                <p className="text-white/90 text-sm font-bold">AI Insights</p>
-              </div>
-              <button onClick={() => setMobileInsightsOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/50 hover:text-white/80 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto px-5 pb-8 min-h-0">
-              <InsightsContent />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
