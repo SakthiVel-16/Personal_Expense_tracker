@@ -183,8 +183,7 @@ export default function AICoach() {
         {/* ═══════════════════════════════════════
             CHAT PANEL — full width on mobile, flex-1 on desktop
             ═══════════════════════════════════════ */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 h-full">
-          <div className="flex flex-col flex-1 min-h-0 bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 bg-white/[0.015] backdrop-blur-2xl border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
 
             {/* Chat Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] shrink-0">
@@ -314,7 +313,6 @@ export default function AICoach() {
               </div>
             </div>
           </div>
-        </div>
 
         {/* ═══════════════════════════════════════
             DESKTOP INSIGHTS SIDEBAR — hidden on mobile
