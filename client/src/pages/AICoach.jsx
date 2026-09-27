@@ -44,6 +44,7 @@ export default function AICoach() {
       sessionStorage.setItem('ai_insights', JSON.stringify(r.data))
     } catch (e) {
       console.error(e)
+      alert('AI Error: ' + (e.response?.data?.error || e.message))
     }
     setLoading(false)
   }
@@ -110,7 +111,7 @@ export default function AICoach() {
         {/* Insights panel */}
         <div className="space-y-6">
           {!insights && !loading && (
-            <div className="bg-white/[0.02] backdrop-blur-2xl border border-dashed border-white/10 rounded-[32px] p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px] hover:bg-white/[0.03] transition-all duration-500">
+            <div className="bg-white/[0.02] backdrop-blur-2xl border border-dashed border-white/10 rounded-[32px] p-8 lg:p-12 flex flex-col items-center justify-start pt-16 lg:pt-24 text-center h-[500px] lg:h-[calc(100vh-200px)] min-h-[400px] hover:bg-white/[0.03] transition-all duration-500">
               <div className="w-20 h-20 rounded-3xl bg-white/[0.05] border border-white/5 flex items-center justify-center mb-6 shadow-inner">
                 <Bot className="w-10 h-10 text-white/40"/>
               </div>
@@ -172,8 +173,8 @@ export default function AICoach() {
         </div>
 
         {/* Chat panel */}
-        <div className="ai-chat-panel bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] flex flex-col h-[700px] overflow-hidden shadow-2xl">
-          <div className="ai-chat-header px-8 py-6 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
+        <div className="ai-chat-panel bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[32px] flex flex-col h-[500px] lg:h-[calc(100vh-200px)] min-h-[400px] overflow-hidden shadow-2xl">
+          <div className="ai-chat-header px-6 lg:px-8 py-5 lg:py-6 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
               <p className="text-white/90 text-sm font-bold tracking-wide">Interactive Session</p>

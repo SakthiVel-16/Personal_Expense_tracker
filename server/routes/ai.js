@@ -6,8 +6,11 @@ const router = express.Router();
 
 // Models to try in order — if one fails, try next
 const MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-pro'
+  'gemini-2.5-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-pro-latest'
 ]
 
 const toObj = (result) => result[0] ? result[0].values.map(row => {
