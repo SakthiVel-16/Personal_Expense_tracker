@@ -16,8 +16,8 @@ router.get('/', async (req, res) => {
     const manualLiabilities = items.filter(i => i.type === 'liability').reduce((s, i) => s + i.amount, 0);
     
     // Calculate dynamic net worth from transactions (all time)
-    const incomeResult = await db.exec(`SELECT SUM(amount) as total FROM v_legacy_tx WHERE type = 'income'`);
-    const expenseResult = await db.exec(`SELECT SUM(amount) as total FROM v_legacy_tx WHERE type = 'expense'`);
+    const incomeResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'income'`);
+    const expenseResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'expense'`);
     
     const totalIncome = incomeResult[0]?.values[0]?.[0] || 0;
     const totalExpense = expenseResult[0]?.values[0]?.[0] || 0;

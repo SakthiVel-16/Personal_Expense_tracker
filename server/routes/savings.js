@@ -231,7 +231,7 @@ router.get('/overview', async (req, res) => {
 
     const groupedTotals = toObj(await db.exec(`
       SELECT strftime('%Y-%m', date) as ym, type, SUM(amount) as total
-      FROM v_legacy_tx
+      FROM transactions
       WHERE date >= ? AND date <= ?
       GROUP BY ym, type
     `, [startStr, endStr]));
@@ -275,14 +275,14 @@ router.get('/overview', async (req, res) => {
 
     const allExpenses = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
-      FROM v_legacy_tx t
+      FROM transactions t
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [currStart, currEnd]
     ))
 
     const currIncome = toObj(await db.exec(
-      `SELECT SUM(amount) as total FROM v_legacy_tx
+      `SELECT SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? AND type='income'`,
       [currStart, currEnd]
     ))[0]?.total || 0
@@ -306,7 +306,7 @@ router.get('/overview', async (req, res) => {
     const budgets = toObj(await db.exec(`
       SELECT b.amount,
         COALESCE((
-          SELECT SUM(t.amount) FROM v_legacy_tx t
+          SELECT SUM(t.amount) FROM transactions t
           WHERE t.category_id = b.category_id 
           AND t.type='expense'
           AND t.date >= ? AND t.date <= ?
@@ -395,7 +395,7 @@ router.get('/leaks', async (req, res) => {
         COUNT(*) as count, 
         SUM(t.amount) as total,
         AVG(t.amount) as avg_amount
-      FROM v_legacy_tx t
+      FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? 
       AND t.type = 'expense'
@@ -408,7 +408,7 @@ router.get('/leaks', async (req, res) => {
     // Categories growing vs last month
     const currCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total
-      FROM v_legacy_tx t 
+      FROM transactions t 
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [currStart, currEnd]
@@ -416,7 +416,7 @@ router.get('/leaks', async (req, res) => {
 
     const prevCats = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
-      FROM v_legacy_tx t 
+      FROM transactions t 
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [prevStartStr, prevEndStr]
@@ -441,7 +441,7 @@ router.get('/leaks', async (req, res) => {
         COUNT(*) as months,
         AVG(amount) as avg_amount,
         SUM(amount) as total
-      FROM v_legacy_tx
+      FROM transactions
       WHERE type = 'expense'
       AND is_recurring = 1
       GROUP BY LOWER(description)
@@ -468,7 +468,7 @@ router.get('/challenges', async (req, res) => {
     const topCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total,
         COUNT(*) as count
-      FROM v_legacy_tx t
+      FROM transactions t
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name
@@ -589,7 +589,7 @@ router.post('/ai-insight', async (req, res) => {
     const currEnd = end || now.toISOString().split('T')[0]
 
     const totals = toObj(await db.exec(
-      `SELECT type, SUM(amount) as total FROM v_legacy_tx
+      `SELECT type, SUM(amount) as total FROM transactions
        WHERE date >= ? AND date <= ? GROUP BY type`,
       [currStart, currEnd]
     ))
@@ -601,7 +601,7 @@ router.post('/ai-insight', async (req, res) => {
 
     const byCategory = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total, COUNT(*) as count
-      FROM v_legacy_tx t JOIN categories c ON t.category_id = c.id
+      FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name ORDER BY total DESC`,
       [currStart, currEnd]

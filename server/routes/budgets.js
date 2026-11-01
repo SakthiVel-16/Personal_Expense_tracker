@@ -58,7 +58,7 @@ router.get('/', async (req, res) => {
     const budgets = await Promise.all(rows.map(async b => {
       const dates = getBudgetDates(b.period, start, end);
       const spentRes = await db.exec(`
-        SELECT COALESCE(SUM(amount), 0) as spent FROM v_legacy_tx
+        SELECT COALESCE(SUM(amount), 0) as spent FROM transactions
         WHERE category_id = ? AND type = 'expense'
         AND date >= ? AND date <= ?
       `, [b.category_id, dates.start, dates.end]);
