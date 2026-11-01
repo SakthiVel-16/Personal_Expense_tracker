@@ -4,8 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { Link, useNavigate } from 'react-router-dom'
 import { useDateRange } from '../context/DateContext.jsx'
 import api from '../lib/api.js'
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
+import { fmt } from '../lib/format.js'
 
 function KPICard({ label, value, sub, icon: Icon, color, trend }) {
   return (
@@ -124,12 +123,12 @@ function HealthScore({ score }) {
   )
 }
 
-const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316']
+const COLORS = ['#2dd4bf','#fb7185','#818cf8','#f472b6','#fbbf24','#34d399','#a78bfa','#22d3ee','#f87171','#e879f9']
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-transparent/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
+    <div className="bg-[#050816]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/80">
       <p className="text-white/50 mb-3 font-semibold tracking-wide uppercase text-[10px]">{label}</p>
       <div className="space-y-2">
         {payload.map(p => (
@@ -320,9 +319,16 @@ export default function Dashboard() {
                         <div className="w-8 h-8 rounded-xl bg-white/[0.05] border border-white/5 flex items-center justify-center text-xs shadow-inner group-hover:bg-white/10 transition-colors">
                           {cat.icon}
                         </div>
-                        <span className="text-white/70 text-sm font-semibold group-hover:text-white transition-colors tracking-wide">
-                          {cat.name}
-                        </span>
+                        <div>
+                          <span className="text-white/70 text-sm font-semibold group-hover:text-white transition-colors tracking-wide block">
+                            {cat.name}
+                          </span>
+                          {cat.group_name && (
+                            <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold block">
+                              {cat.group_name}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-white/40 text-[11px] font-bold">{totalPct}%</span>
@@ -368,7 +374,9 @@ export default function Dashboard() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-white/90 text-sm font-bold truncate tracking-wide">{t.description || 'No description'}</p>
-                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">{t.category_name}</p>
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
+                        {t.category_group ? `${t.category_group} • ` : ''}{t.category_name}
+                      </p>
                     </div>
                   </div>
                   <span className="text-white text-lg font-black tracking-tighter shrink-0 ml-4 group-hover:text-rose-400 transition-colors">{fmt(t.amount)}</span>

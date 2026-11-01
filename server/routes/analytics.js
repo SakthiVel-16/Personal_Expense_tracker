@@ -20,7 +20,7 @@ router.get('/summary', async (req, res) => {
       SELECT type, SUM(amount) as total FROM transactions
       WHERE date >= ? AND date <= ? GROUP BY type`, [s, e]);
     const byCategory = await db.exec(`
-      SELECT c.name, c.icon, c.color, SUM(t.amount) as total, COUNT(*) as count
+      SELECT c.name, c.icon, c.color, c.group_name, SUM(t.amount) as total, COUNT(*) as count
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY t.category_id ORDER BY total DESC`, [s, e]);
@@ -29,7 +29,7 @@ router.get('/summary', async (req, res) => {
       WHERE date >= ? AND date <= ?
       GROUP BY date, type ORDER BY date ASC`, [s, e]);
     const topExpenses = await db.exec(`
-      SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color
+      SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color, c.group_name as category_group
       FROM transactions t LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       ORDER BY t.amount DESC LIMIT 5`, [s, e]);
@@ -56,7 +56,7 @@ router.get('/summary', async (req, res) => {
     const budgetResult = await db.exec(`SELECT COUNT(*) as total FROM budgets`);
     const overBudgetResult = await db.exec(`
       SELECT COUNT(*) as over FROM budgets b WHERE
-      (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE category_id=b.category_id AND type='expense' AND date >= ?) > b.amount`, [s]);
+      (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE category_id=b.category_id AND type='expense' AND date >= ? AND date <= ?) > b.amount`, [s, e]);
     const totalBudgets = budgetResult[0] ? budgetResult[0].values[0][0] : 0;
     const overBudgets = overBudgetResult[0] ? overBudgetResult[0].values[0][0] : 0;
     let healthScore = 50;
@@ -115,7 +115,7 @@ router.get('/velocity', async (req, res) => {
 
     // Current period totals by category
     const current = toObj(await db.exec(`
-      SELECT c.name, c.icon, c.color, SUM(t.amount) as total
+      SELECT c.name, c.icon, c.color, c.group_name, SUM(t.amount) as total
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type = 'expense'
       GROUP BY t.category_id ORDER BY total DESC`, [start, end]
@@ -123,7 +123,7 @@ router.get('/velocity', async (req, res) => {
 
     // Previous period totals by category
     const previous = toObj(await db.exec(`
-      SELECT c.name, SUM(t.amount) as total
+      SELECT c.name, c.group_name, SUM(t.amount) as total
       FROM transactions t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type = 'expense'
       GROUP BY t.category_id`, [prevStartStr, prevEndStr]
@@ -141,7 +141,7 @@ router.get('/velocity', async (req, res) => {
       const velocity = prev > 0
         ? Math.round(((c.total - prev) / prev) * 100)
         : null
-      return { ...c, prev, velocity }
+      return { ...c, prev, previousAmount: prev, velocity }
     })
 
     // Overall velocity

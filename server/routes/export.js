@@ -6,6 +6,16 @@ const toObj = (r) => r[0] ? r[0].values.map(row => {
   const obj = {}; r[0].columns.forEach((c, i) => obj[c] = row[i]); return obj;
 }) : [];
 
+function sanitizeCsvField(field) {
+  if (field === null || field === undefined) return '""';
+  let val = String(field);
+  // Neutralize CSV injection: if field starts with formula trigger characters (=, +, -, @, \t, \r)
+  if (/^[=+\-@\t\r]/.test(val)) {
+    val = "'" + val;
+  }
+  return `"${val.replace(/"/g, '""')}"`;
+}
+
 router.get('/csv', async (req, res) => {
   try {
     const db = getDb();
@@ -18,8 +28,17 @@ router.get('/csv', async (req, res) => {
     query += ` ORDER BY t.date DESC`;
 
     const rows = toObj(await db.exec(query, params));
-    const csv = ['Date,Type,Amount,Description,Category,Payment Method,Notes',
-      ...rows.map(r => `${r.date},${r.type},${r.amount},"${r.description || ''}","${r.category || ''}",${r.payment_method},"${r.notes || ''}"`)
+    const csv = [
+      'Date,Type,Amount,Description,Category,Payment Method,Notes',
+      ...rows.map(r => [
+        sanitizeCsvField(r.date),
+        sanitizeCsvField(r.type),
+        r.amount,
+        sanitizeCsvField(r.description),
+        sanitizeCsvField(r.category),
+        sanitizeCsvField(r.payment_method),
+        sanitizeCsvField(r.notes)
+      ].join(','))
     ].join('\n');
 
     res.setHeader('Content-Type', 'text/csv');

@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     console.log('GET /transactions - Filters:', { start, end, category, type, search });
     
     let query = `
-      SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color
+      SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color, c.group_name as category_group
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
     `;
@@ -63,8 +63,8 @@ router.post('/', async (req, res) => {
     
     const { amount, type, category_id, description, date, payment_method, tags, notes, is_recurring, recurring_interval } = req.body;
 
-    if (!amount || !type || !date) {
-      return res.status(400).json({ error: 'amount, type and date are required' });
+    if (!amount || !type || !date || isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Valid positive amount, type and date are required' });
     }
 
     await db.run(
@@ -104,6 +104,10 @@ router.put('/:id', async (req, res) => {
       amount, type, category_id, description,
       date, payment_method, tags, notes, is_recurring
     } = req.body;
+
+    if (amount !== undefined && (isNaN(Number(amount)) || Number(amount) <= 0)) {
+      return res.status(400).json({ error: 'Amount must be greater than zero' });
+    }
 
     await db.run(
       `UPDATE transactions 

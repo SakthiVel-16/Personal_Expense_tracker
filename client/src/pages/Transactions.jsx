@@ -4,8 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { useDateRange } from '../context/DateContext.jsx'
 import api from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
+import { fmt } from '../lib/format.js'
 
 const PAYMENT_METHODS = ['cash', 'upi', 'credit card', 'debit card', 'net banking', 'other']
 
@@ -62,6 +61,12 @@ function TransactionForm({ initial, categories, onSave, onClose }) {
   }
 
   const filteredCats = categories.filter(c => c.type === form.type || c.type === 'both')
+  const groupedCats = filteredCats.reduce((acc, c) => {
+    const group = c.group_name || (c.type === 'income' ? 'Income' : 'General')
+    if (!acc[group]) acc[group] = []
+    acc[group].push(c)
+    return acc
+  }, {})
 
   return (
     <div className="space-y-5">
@@ -102,11 +107,17 @@ function TransactionForm({ initial, categories, onSave, onClose }) {
           <select
             value={form.category_id ?? ''}
             onChange={e => set('category_id', e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3.5
-            text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all appearance-none">
-            <option value="">Select...</option>
-            {filteredCats.map(c => (
-              <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
+            className="w-full bg-[#0a0e27] border border-white/10 rounded-2xl px-4 py-3.5
+            text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all cursor-pointer">
+            <option value="" className="bg-[#0a0e27] text-white/40">Select category...</option>
+            {Object.entries(groupedCats).map(([groupName, cats]) => (
+              <optgroup key={groupName} label={groupName} className="bg-[#0f1438] text-indigo-300 font-bold">
+                {cats.map(c => (
+                  <option key={c.id} value={c.id} className="bg-[#0a0e27] text-white font-normal py-1">
+                    {c.icon} {c.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -241,6 +252,13 @@ export default function Transactions() {
   const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
   const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
 
+  const groupedAllCats = categories.reduce((acc, c) => {
+    const group = c.group_name || (c.type === 'income' ? 'Income' : 'General')
+    if (!acc[group]) acc[group] = []
+    acc[group].push(c)
+    return acc
+  }, {})
+
   return (
     <div className="page-shell relative min-h-screen bg-transparent overflow-hidden p-0">
       {/* Cinematic Ambient Lighting System */}
@@ -290,11 +308,17 @@ export default function Transactions() {
               <option value="expense" className="bg-transparent">Outflow (Expense)</option>
             </select>
             <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
-              className="flex-1 md:flex-none bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3.5 text-white/70
-              text-sm font-medium outline-none focus:border-white/20 transition-all appearance-none cursor-pointer max-w-[180px] truncate">
-              <option value="" className="bg-transparent">All categories</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
+              className="flex-1 md:flex-none bg-[#0a0e27] border border-white/10 rounded-xl px-4 py-3.5 text-white/80
+              text-sm font-medium outline-none focus:border-white/20 transition-all cursor-pointer max-w-[200px] truncate">
+              <option value="" className="bg-[#0a0e27] text-white/50">All categories</option>
+              {Object.entries(groupedAllCats).map(([groupName, cats]) => (
+                <optgroup key={groupName} label={groupName} className="bg-[#0f1438] text-indigo-300 font-bold">
+                  {cats.map(c => (
+                    <option key={c.id} value={c.id} className="bg-[#0a0e27] text-white">
+                      {c.icon} {c.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             {(filterType || filterCat || search) && (
@@ -336,8 +360,11 @@ export default function Transactions() {
                       {t.description || 'No description'}
                       {t.is_recurring ? <span className="ml-2 text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full uppercase tracking-wider">↻ Auto</span> : null}
                     </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-white/40 text-[11px] uppercase tracking-[0.15em] font-bold">{t.category_name || 'Uncategorized'}</span>
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      <span className="text-white/50 text-[11px] uppercase tracking-[0.15em] font-bold">
+                        {t.category_group ? <span className="text-white/25">{t.category_group} › </span> : null}
+                        {t.category_name || 'Uncategorized'}
+                      </span>
                       <span className="w-1 h-1 rounded-full bg-white/10" />
                       <span className="text-white/40 text-[11px] uppercase tracking-[0.15em] font-bold">{t.payment_method}</span>
                       <span className="w-1 h-1 rounded-full bg-white/10" />

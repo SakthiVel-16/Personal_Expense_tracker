@@ -4,8 +4,7 @@ import { Plus, Trash2, Check, AlertTriangle, Target, Pencil, PieChart } from 'lu
 import api from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
 import { useDateRange } from '../context/DateContext.jsx'
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
+import { fmt } from '../lib/format.js'
 
 function BudgetCard({ budget, onEdit, onDelete, onCategoryClick }) {
   const pct = Math.min(budget.percentage, 100)
@@ -32,7 +31,9 @@ function BudgetCard({ budget, onEdit, onDelete, onCategoryClick }) {
           </div>
           <div>
             <p className="text-white/90 text-base font-bold group-hover:text-white transition-colors tracking-wide">{budget.category_name}</p>
-            <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold mt-1">{budget.period}</p>
+            <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold mt-1">
+              {budget.category_group ? `${budget.category_group} • ` : ''}{budget.period}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -41,12 +42,12 @@ function BudgetCard({ budget, onEdit, onDelete, onCategoryClick }) {
           )}
           <button onClick={(e) => { e.stopPropagation(); onEdit(budget); }}
             className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center
-            text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
+            text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
             <Pencil className="w-4 h-4" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); onDelete(budget.id); }}
             className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center
-            text-white/40 hover:text-rose-400 hover:bg-rose-500/20 transition-all opacity-0 group-hover:opacity-100">
+            text-white/40 hover:text-rose-400 hover:bg-rose-500/20 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -95,6 +96,14 @@ function BudgetForm({ initial, categories, onSave, onClose }) {
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+  const expenseCats = categories.filter(c => c.type === 'expense' || c.type === 'both')
+  const groupedCats = expenseCats.reduce((acc, c) => {
+    const group = c.group_name || 'General'
+    if (!acc[group]) acc[group] = []
+    acc[group].push(c)
+    return acc
+  }, {})
+
   const handleSave = async () => {
     if (!form.category_id || !form.amount) return
     setSaving(true)
@@ -114,11 +123,17 @@ function BudgetForm({ initial, categories, onSave, onClose }) {
       <div>
         <label className="text-white/40 text-[11px] tracking-[0.2em] font-bold uppercase mb-2 block">Category</label>
         <select value={form.category_id} onChange={e => set('category_id', e.target.value)}
-          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4
-          text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all appearance-none">
-          <option value="" className="bg-transparent">Select category...</option>
-          {categories.filter(c => c.type === 'expense').map(c => (
-            <option key={c.id} value={c.id} className="bg-transparent">{c.icon} {c.name}</option>
+          className="w-full bg-[#0a0e27] border border-white/10 rounded-2xl px-5 py-4
+          text-white text-sm font-medium outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all cursor-pointer">
+          <option value="" className="bg-[#0a0e27] text-white/40">Select category...</option>
+          {Object.entries(groupedCats).map(([groupName, cats]) => (
+            <optgroup key={groupName} label={groupName} className="bg-[#0f1438] text-indigo-300 font-bold">
+              {cats.map(c => (
+                <option key={c.id} value={c.id} className="bg-[#0a0e27] text-white py-1">
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>

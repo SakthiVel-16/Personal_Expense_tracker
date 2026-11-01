@@ -3,12 +3,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, ArrowUpRight, Repeat, Smartphone, Zap, ShieldAlert, Activity } from 'lucide-react'
 import { useDateRange } from '../context/DateContext.jsx'
 import api from '../lib/api.js'
+import { fmt } from '../lib/format.js'
 
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 const COLORS = ['#2dd4bf','#fb7185','#818cf8','#f472b6','#fbbf24','#34d399','#a78bfa','#22d3ee','#f87171','#e879f9']
 
 const Tip = ({ active, payload, label }) => active && payload?.length ? (
-  <div className="bg-transparent/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/50">
+  <div className="bg-[#050816]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-sm shadow-2xl shadow-black/80">
     <p className="text-white/50 mb-3 font-semibold tracking-wide uppercase text-[10px]">{label}</p>
     <div className="space-y-2">
       {payload.map(p => (
@@ -51,7 +51,7 @@ export default function Analytics() {
     Promise.all([
       api.get('/analytics/summary', { params: { start: range.start, end: range.end } }),
       api.get('/analytics/velocity', { params: { start: range.start, end: range.end } }),
-      api.get('/savings/leaks')
+      api.get('/savings/leaks', { params: { start: range.start, end: range.end } })
     ]).then(([summaryRes, velocityRes, leaksRes]) => {
       setData(summaryRes.data)
       setVelocity(velocityRes.data)
@@ -171,6 +171,9 @@ export default function Analytics() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-white/90 text-sm font-bold truncate tracking-wide">{cat.name}</p>
+                          {cat.group_name && (
+                            <p className="text-white/30 text-[10px] uppercase tracking-wider font-semibold">{cat.group_name}</p>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
@@ -241,7 +244,7 @@ export default function Analytics() {
             <ShieldAlert className="w-5 h-5" />
           </div>
           <p className="text-amber-400 text-lg font-bold tracking-wide">System Anomalies Detected</p>
-          <span className="ml-3 text-amber-400/60 text-[10px] font-bold tracking-[0.2em] uppercase border border-amber-500/20 px-3 py-1 rounded-full bg-amber-500/10">AI Scanning Active</span>
+          <span className="ml-3 text-amber-400/60 text-[10px] font-bold tracking-[0.2em] uppercase border border-amber-500/20 px-3 py-1 rounded-full bg-amber-500/10">Z-Score Math Active</span>
         </div>
         
         {anomalies.length === 0

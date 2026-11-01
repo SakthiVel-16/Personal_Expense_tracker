@@ -16,8 +16,8 @@ router.get('/', async (req, res) => {
     const manualLiabilities = items.filter(i => i.type === 'liability').reduce((s, i) => s + i.amount, 0);
     
     // Calculate dynamic net worth from transactions (all time)
-    const incomeResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'income'`);
-    const expenseResult = await db.exec(`SELECT SUM(amount) as total FROM transactions WHERE type = 'expense'`);
+    const incomeResult = await db.exec(`SELECT SUM(amount) as total FROM v_legacy_tx WHERE type = 'income'`);
+    const expenseResult = await db.exec(`SELECT SUM(amount) as total FROM v_legacy_tx WHERE type = 'expense'`);
     
     const totalIncome = incomeResult[0]?.values[0]?.[0] || 0;
     const totalExpense = expenseResult[0]?.values[0]?.[0] || 0;
@@ -45,8 +45,13 @@ router.post('/', async (req, res) => {
   try {
     const db = getDb();
     const { name, type, amount, category, date, notes } = req.body;
+
+    if (!name || amount === undefined || amount === null || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Valid name and positive amount are required' });
+    }
+
     await db.run(`INSERT INTO net_worth (name, type, amount, category, date, notes) VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, type, amount, category || 'other', date || new Date().toISOString().split('T')[0], notes]);
+      [name, type || 'asset', Number(amount), category || 'other', date || new Date().toISOString().split('T')[0], notes || '']);
     saveDatabase();
     res.json({ message: 'Added' });
   } catch (err) {
@@ -57,9 +62,16 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const db = getDb();
-    const { name, amount, category, notes } = req.body;
-    await db.run(`UPDATE net_worth SET name=?, amount=?, category=?, notes=? WHERE id=?`,
-      [name, amount, category, notes, req.params.id]);
+    const { name, type, amount, category, date, notes } = req.body;
+
+    if (!name || amount === undefined || amount === null || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Valid name and positive amount are required' });
+    }
+
+    await db.run(
+      `UPDATE net_worth SET name=?, type=?, amount=?, category=?, date=?, notes=? WHERE id=?`,
+      [name, type || 'asset', Number(amount), category || 'other', date || new Date().toISOString().split('T')[0], notes || '', req.params.id]
+    );
     saveDatabase();
     res.json({ message: 'Updated' });
   } catch (err) {

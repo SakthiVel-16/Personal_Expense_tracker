@@ -104,11 +104,16 @@ router.post('/goals', async (req, res) => {
   try {
     const db = getDb()
     const { name, icon, target_amount, deadline, color, category, notes } = req.body
+
+    if (!name || !target_amount || Number(target_amount) <= 0) {
+      return res.status(400).json({ error: 'Valid goal name and positive target amount are required' })
+    }
+
     await db.run(
       `INSERT INTO savings_goals 
        (name, icon, target_amount, deadline, color, category, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, icon || '🎯', target_amount,
+      [name, icon || '🎯', Number(target_amount),
        deadline || null, color || '#6366f1',
        category || 'short', notes || '']
     )
@@ -159,10 +164,15 @@ router.post('/goals/:id/contribute', async (req, res) => {
   try {
     const db = getDb()
     const { amount, note, date } = req.body
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Contribution amount must be greater than zero' })
+    }
+
     await db.run(
       `INSERT INTO savings_contributions (goal_id, amount, note, date)
        VALUES (?, ?, ?, ?)`,
-      [req.params.id, amount, note || '',
+      [req.params.id, Number(amount), note || '',
        date || new Date().toISOString().split('T')[0]]
     )
 
@@ -213,34 +223,41 @@ router.get('/overview', async (req, res) => {
     const db = getDb()
     const now = new Date()
 
-    // Last 6 months savings history
-    const months = []
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const y = d.getFullYear()
-      const m = String(d.getMonth() + 1).padStart(2, '0')
-      const start = `${y}-${m}-01`
-      const lastDay = new Date(y, d.getMonth() + 1, 0).getDate()
-      const end = `${y}-${m}-${lastDay}`
-      const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' })
+    // Last 6 months savings history - single query instead of 6 round trips
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const startStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-01`;
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const endStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${lastDayOfMonth}`;
 
-      const totals = toObj(await db.exec(
-        `SELECT type, SUM(amount) as total FROM transactions
-         WHERE date >= ? AND date <= ? GROUP BY type`,
-        [start, end]
-      ))
-      let income = 0, expense = 0
-      totals.forEach(t => {
-        if (t.type === 'income') income = t.total
-        if (t.type === 'expense') expense = t.total
-      })
+    const groupedTotals = toObj(await db.exec(`
+      SELECT strftime('%Y-%m', date) as ym, type, SUM(amount) as total
+      FROM v_legacy_tx
+      WHERE date >= ? AND date <= ?
+      GROUP BY ym, type
+    `, [startStr, endStr]));
+
+    const monthMap = {};
+    groupedTotals.forEach(r => {
+      if (!monthMap[r.ym]) monthMap[r.ym] = { income: 0, expense: 0 };
+      if (r.type === 'income') monthMap[r.ym].income = r.total;
+      if (r.type === 'expense') monthMap[r.ym].expense = r.total;
+    });
+
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+      const income = monthMap[ym]?.income || 0;
+      const expense = monthMap[ym]?.expense || 0;
+      const saved = income - expense;
       months.push({
-        label, income, expense,
-        saved: income - expense,
-        rate: income > 0
-          ? Math.round(((income - expense) / income) * 100)
-          : 0
-      })
+        label,
+        income,
+        expense,
+        saved,
+        rate: income > 0 ? Math.round((saved / income) * 100) : 0
+      });
     }
 
     // Accept date range from query params — fallback to current month
@@ -258,14 +275,14 @@ router.get('/overview', async (req, res) => {
 
     const allExpenses = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
-      FROM transactions t
+      FROM v_legacy_tx t
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [currStart, currEnd]
     ))
 
     const currIncome = toObj(await db.exec(
-      `SELECT SUM(amount) as total FROM transactions
+      `SELECT SUM(amount) as total FROM v_legacy_tx
        WHERE date >= ? AND date <= ? AND type='income'`,
       [currStart, currEnd]
     ))[0]?.total || 0
@@ -289,7 +306,7 @@ router.get('/overview', async (req, res) => {
     const budgets = toObj(await db.exec(`
       SELECT b.amount,
         COALESCE((
-          SELECT SUM(t.amount) FROM transactions t
+          SELECT SUM(t.amount) FROM v_legacy_tx t
           WHERE t.category_id = b.category_id 
           AND t.type='expense'
           AND t.date >= ? AND t.date <= ?
@@ -357,15 +374,20 @@ router.get('/leaks', async (req, res) => {
     const db = getDb()
     const now = new Date()
 
-    // Current month
-    const currStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
-    const currEnd = now.toISOString().split('T')[0]
+    const { start, end } = req.query;
+    const currStart = start || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+    const currEnd = end || now.toISOString().split('T')[0]
 
-    // Previous month
-    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0)
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const prevStartStr = prevStart.toISOString().split('T')[0]
-    const prevEndStr = prevEnd.toISOString().split('T')[0]
+    // Calculate previous period of same duration
+    const sDate = new Date(currStart);
+    const eDate = new Date(currEnd);
+    const diffDays = Math.max(1, Math.round((eDate - sDate) / (1000 * 60 * 60 * 24)));
+    const prevEndDate = new Date(sDate);
+    prevEndDate.setDate(prevEndDate.getDate() - 1);
+    const prevStartDate = new Date(prevEndDate);
+    prevStartDate.setDate(prevStartDate.getDate() - diffDays);
+    const prevStartStr = prevStartDate.toISOString().split('T')[0];
+    const prevEndStr = prevEndDate.toISOString().split('T')[0];
 
     // High frequency low-value transactions this month
     const frequent = toObj(await db.exec(`
@@ -373,7 +395,7 @@ router.get('/leaks', async (req, res) => {
         COUNT(*) as count, 
         SUM(t.amount) as total,
         AVG(t.amount) as avg_amount
-      FROM transactions t
+      FROM v_legacy_tx t
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? 
       AND t.type = 'expense'
@@ -386,7 +408,7 @@ router.get('/leaks', async (req, res) => {
     // Categories growing vs last month
     const currCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total
-      FROM transactions t 
+      FROM v_legacy_tx t 
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [currStart, currEnd]
@@ -394,7 +416,7 @@ router.get('/leaks', async (req, res) => {
 
     const prevCats = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total
-      FROM transactions t 
+      FROM v_legacy_tx t 
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name`, [prevStartStr, prevEndStr]
@@ -419,7 +441,7 @@ router.get('/leaks', async (req, res) => {
         COUNT(*) as months,
         AVG(amount) as avg_amount,
         SUM(amount) as total
-      FROM transactions
+      FROM v_legacy_tx
       WHERE type = 'expense'
       AND is_recurring = 1
       GROUP BY LOWER(description)
@@ -438,14 +460,15 @@ router.get('/challenges', async (req, res) => {
   try {
     const db = getDb()
     const now = new Date()
-    const currStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
-    const currEnd = now.toISOString().split('T')[0]
+    const { start, end } = req.query;
+    const currStart = start || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+    const currEnd = end || now.toISOString().split('T')[0]
 
     // Get top spending categories
     const topCats = toObj(await db.exec(`
       SELECT c.name, c.icon, SUM(t.amount) as total,
         COUNT(*) as count
-      FROM transactions t
+      FROM v_legacy_tx t
       JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name
@@ -503,7 +526,7 @@ router.get('/challenges', async (req, res) => {
         })
       }
 
-      if (cat.name === 'Transport' || cat.name === 'Petrol') {
+      if (cat.name === 'Transport' || cat.name === 'Daily Commute' || cat.name === 'Petrol') {
         const saving = Math.round(cat.total * 0.25)
         challenges.push({
           id: `transport_${Date.now()}`,
@@ -515,6 +538,21 @@ router.get('/challenges', async (req, res) => {
           duration: '7 days',
           type: 'reduce',
           difficulty: 'easy'
+        })
+      }
+
+      if (cat.name === 'Outstation Travel') {
+        const saving = Math.round(cat.total * 0.15)
+        challenges.push({
+          id: `travel_${Date.now()}`,
+          icon: '✈️',
+          title: 'Early Travel Booking',
+          description: `You spent ₹${cat.total.toLocaleString('en-IN')} on outstation travel. Booking 2 weeks early saves 15-20%.`,
+          potential_saving: saving,
+          category: cat.name,
+          duration: '30 days',
+          type: 'optimize',
+          difficulty: 'medium'
         })
       }
     })
@@ -546,11 +584,12 @@ router.post('/ai-insight', async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
     const now = new Date()
-    const currStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
-    const currEnd = now.toISOString().split('T')[0]
+    const { start, end } = req.body || req.query || {}
+    const currStart = start || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+    const currEnd = end || now.toISOString().split('T')[0]
 
     const totals = toObj(await db.exec(
-      `SELECT type, SUM(amount) as total FROM transactions
+      `SELECT type, SUM(amount) as total FROM v_legacy_tx
        WHERE date >= ? AND date <= ? GROUP BY type`,
       [currStart, currEnd]
     ))
@@ -562,7 +601,7 @@ router.post('/ai-insight', async (req, res) => {
 
     const byCategory = toObj(await db.exec(`
       SELECT c.name, SUM(t.amount) as total, COUNT(*) as count
-      FROM transactions t JOIN categories c ON t.category_id = c.id
+      FROM v_legacy_tx t JOIN categories c ON t.category_id = c.id
       WHERE t.date >= ? AND t.date <= ? AND t.type='expense'
       GROUP BY c.name ORDER BY total DESC`,
       [currStart, currEnd]
@@ -579,7 +618,7 @@ router.post('/ai-insight', async (req, res) => {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 
-    const prompt = `You are an encouraging, positive personal finance coach for a 22-year-old Indian professional earning ₹80,000/month.
+    const prompt = `You are an encouraging, positive personal finance coach for an Indian professional${income > 0 ? ` earning ₹${income.toLocaleString('en-IN')}` : ''}.
 
 Financial snapshot this month:
 - Income: ₹${income}

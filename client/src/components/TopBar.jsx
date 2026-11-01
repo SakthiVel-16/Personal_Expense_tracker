@@ -1,15 +1,21 @@
 import { useState, useRef, useEffect } from 'react'
-import { Calendar, ChevronDown, RefreshCw } from 'lucide-react'
+import { Calendar, ChevronDown, Download, FileSpreadsheet, FileCode } from 'lucide-react'
 import { useDateRange, PRESETS } from '../context/DateContext.jsx'
+import api from '../lib/api.js'
 
 export default function TopBar({ title }) {
   const { preset, range, setPresetKey, setCustomRange,
     customStart, customEnd, setCustomStart, setCustomEnd } = useDateRange()
   const [open, setOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const ref = useRef(null)
+  const exportRef = useRef(null)
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+      if (exportRef.current && !exportRef.current.contains(e.target)) setExportOpen(false)
+    }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
@@ -20,6 +26,42 @@ export default function TopBar({ title }) {
     if (!d) return '—'
     const [y, m, day] = d.split('-')
     return `${day} ${new Date(d).toLocaleString('en-IN', { month: 'short' })} ${y}`
+  }
+
+  const handleExportCsv = async () => {
+    try {
+      const res = await api.get('/export/csv', {
+        params: { start: range.start, end: range.end },
+        responseType: 'blob'
+      })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `financeos_${range.start || 'all'}_${range.end || 'all'}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setExportOpen(false)
+    } catch (e) {
+      console.error('Export CSV failed', e)
+    }
+  }
+
+  const handleExportJson = async () => {
+    try {
+      const res = await api.get('/export/json')
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `financeos_backup_${new Date().toISOString().split('T')[0]}.json`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setExportOpen(false)
+    } catch (e) {
+      console.error('Export JSON failed', e)
+    }
   }
 
   return (
@@ -90,6 +132,29 @@ export default function TopBar({ title }) {
                   Initialize Range
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Export dropdown */}
+        <div className="relative" ref={exportRef}>
+          <button onClick={() => setExportOpen(o => !o)}
+            title="Export Data"
+            className="flex items-center justify-center w-11 h-11 md:w-12 md:h-12 bg-white/[0.03] backdrop-blur-xl border border-white/10
+            hover:bg-white/[0.08] hover:border-white/20 rounded-2xl transition-all shadow-lg text-white/70 hover:text-white cursor-pointer">
+            <Download className="w-4 h-4" />
+          </button>
+
+          {exportOpen && (
+            <div className="absolute right-0 top-[calc(100%+8px)] w-48 bg-[#0c1020]/95 backdrop-blur-3xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/80 z-50">
+              <button onClick={handleExportCsv}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all text-left cursor-pointer">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400" /> Export CSV
+              </button>
+              <button onClick={handleExportJson}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all text-left cursor-pointer">
+                <FileCode className="w-4 h-4 text-indigo-400" /> Export JSON
+              </button>
             </div>
           )}
         </div>

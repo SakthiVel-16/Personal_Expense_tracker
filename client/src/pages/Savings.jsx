@@ -5,8 +5,7 @@ import api from '../lib/api.js'
 import { useDateRange } from '../context/DateContext.jsx'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import Modal from '../components/Modal.jsx'
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
+import { fmt } from '../lib/format.js'
 
 const GOAL_ICONS = ['🎯','✈️','🚗','🏠','💻','📚','💍',
   '🎓','🏋️','🌍','💰','🎮','👜','🏖️','🛵','📷','🎸']
@@ -208,7 +207,7 @@ function ContributeForm({ goal, onSave }) {
     <div className="space-y-5">
       <div className="bg-[#080c14] border border-white/5 rounded-2xl p-6 text-center">
         <p className="text-white/40 text-xs tracking-widest font-bold uppercase mb-2">Remaining</p>
-        <p className="text-white/90 text-3xl font-serif tracking-tight">{fmt(remaining)}</p>
+        <p className="text-white/90 text-3xl font-black tracking-tight">{fmt(remaining)}</p>
       </div>
 
       {quick.length > 0 && (
@@ -393,7 +392,7 @@ function GoalCard({ goal, onEdit, onDelete, onContribute, onHistory, challenge }
       <div className="flex items-center gap-5 mb-6">
         <CircularProgress pct={pct} colorClass={theme.primary} baseColorClass={theme.baseStroke}/>
         <div className="flex-1">
-          <div className="font-serif text-[24px] text-[#f5f0e8] leading-tight">{fmt(goal.contributed)}</div>
+          <div className="font-black text-[24px] text-white leading-tight">{fmt(goal.contributed)}</div>
           <div className="text-xs text-[#5a6480] uppercase tracking-wider font-bold mt-1">of {fmt(goal.target_amount)} goal</div>
           <div className="text-sm text-[#8a94a6] mt-1.5 font-medium">{fmt(goal.target_amount - goal.contributed)} still to go</div>
         </div>
@@ -596,24 +595,24 @@ export default function Savings() {
       <div className="savings-page-header flex items-start justify-between mb-8">
         <div>
           <div className="text-xs tracking-[0.22em] text-[#4a5568] uppercase font-medium mb-2">Your wealth journey</div>
-          <h1 className="font-serif text-[30px] text-[#f5f0e8] leading-[1.15] font-normal">
+          <h1 className="font-black text-[32px] text-white tracking-tight leading-[1.15]">
             Building the life<br/>
             <em className="italic text-indigo-400">you're dreaming of</em>
           </h1>
-          <div className="text-sm text-[#4a5568] mt-1.5 tracking-wide">Every rupee saved is a vote for your future self.</div>
+          <div className="text-sm text-white/50 mt-1.5 tracking-wide">Every rupee saved is a vote for your future self.</div>
         </div>
         <button onClick={() => handleNewGoal()} 
-          className="bg-[#1a1f2e] border border-[#2a3045] text-indigo-400 text-sm font-semibold px-3.5 py-2 rounded-[10px] hover:bg-[#222840] transition-colors whitespace-nowrap tracking-wider">
+          className="bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-indigo-500/30 transition-colors whitespace-nowrap tracking-wider">
           + New goal
         </button>
       </div>
 
       {/* ── Pulse Row ── */}
       <div className="savings-pulse-row grid grid-cols-1 md:grid-cols-3 gap-3 mb-7">
-        <div className="bg-[#110f1c] border border-indigo-500/20 rounded-[16px] p-4">
-          <div className="text-xs tracking-[0.14em] text-[#3d4660] uppercase font-semibold mb-2">Saved this month</div>
-          <div className="font-serif text-[22px] text-indigo-400 leading-none">{fmt(latestMonth?.saved || 0)}</div>
-          <div className="text-xs text-[#3d4660] mt-1.5">recent rhythm check</div>
+        <div className="bg-white/[0.02] border border-indigo-500/20 rounded-2xl p-5">
+          <div className="text-xs tracking-[0.14em] text-white/40 uppercase font-semibold mb-2">Saved this month</div>
+          <div className="font-black text-[24px] text-indigo-400 tracking-tight leading-none">{fmt(latestMonth?.saved || 0)}</div>
+          <div className="text-xs text-white/40 mt-1.5">recent rhythm check</div>
           <div className="flex items-end gap-0.5 mt-2.5 h-6">
             {(overview?.months || []).slice(-6).map((m, i) => (
               <div key={i} className={`flex-1 rounded-t-sm transition-all ${m.rate > 0 ? 'bg-indigo-500/60' : 'bg-rose-500/40'}`} 
@@ -623,16 +622,16 @@ export default function Savings() {
           </div>
         </div>
         
-        <div className="bg-[#0e1320] border border-[#1e2535] rounded-[16px] p-4 flex flex-col justify-center">
-          <div className="text-xs tracking-[0.14em] text-[#3d4660] uppercase font-semibold mb-2">Total saved across goals</div>
-          <div className="font-serif text-[22px] text-[#f5f0e8] leading-none">{fmt(totalSaved)}</div>
-          <div className="text-xs text-[#3d4660] mt-1.5">across {goals.length} active targets</div>
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 flex flex-col justify-center">
+          <div className="text-xs tracking-[0.14em] text-white/40 uppercase font-semibold mb-2">Total saved across goals</div>
+          <div className="font-black text-[24px] text-white tracking-tight leading-none">{fmt(totalSaved)}</div>
+          <div className="text-xs text-white/40 mt-1.5">across {goals.length} active targets</div>
         </div>
 
-        <div className="bg-[#130a1a] border border-fuchsia-500/20 rounded-[16px] p-4 flex flex-col justify-center">
-          <div className="text-xs tracking-[0.14em] text-[#3d4660] uppercase font-semibold mb-2">Monthly Goal Target</div>
-          <div className="font-serif text-[22px] text-fuchsia-400 leading-none">{fmt(totalMonthlyTarget)}</div>
-          <div className="text-xs text-[#3d4660] mt-1.5">needed to stay on track</div>
+        <div className="bg-white/[0.02] border border-fuchsia-500/20 rounded-2xl p-5 flex flex-col justify-center">
+          <div className="text-xs tracking-[0.14em] text-white/40 uppercase font-semibold mb-2">Monthly Goal Target</div>
+          <div className="font-black text-[24px] text-fuchsia-400 tracking-tight leading-none">{fmt(totalMonthlyTarget)}</div>
+          <div className="text-xs text-white/40 mt-1.5">needed to stay on track</div>
         </div>
       </div>
 

@@ -6,10 +6,10 @@ import api from '../lib/api.js'
 /* ── theme maps ── */
 const iconMap = { warning: AlertTriangle, tip: Lightbulb, positive: CheckCircle, alert: AlertTriangle }
 const colorMap = {
-  warning:  { bg: 'bg-amber-500/8',  border: 'border-amber-500/25', text: 'text-amber-400',  glow: 'shadow-amber-500/5' },
-  tip:      { bg: 'bg-indigo-500/8', border: 'border-indigo-500/25', text: 'text-indigo-400', glow: 'shadow-indigo-500/5' },
-  positive: { bg: 'bg-emerald-500/8', border: 'border-emerald-500/25', text: 'text-emerald-400', glow: 'shadow-emerald-500/5' },
-  alert:    { bg: 'bg-rose-500/8',   border: 'border-rose-500/25', text: 'text-rose-400',   glow: 'shadow-rose-500/5' },
+  warning:  { bg: 'bg-amber-500/10',  border: 'border-amber-500/25', text: 'text-amber-400',  glow: 'shadow-amber-500/5' },
+  tip:      { bg: 'bg-indigo-500/10', border: 'border-indigo-500/25', text: 'text-indigo-400', glow: 'shadow-indigo-500/5' },
+  positive: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', text: 'text-emerald-400', glow: 'shadow-emerald-500/5' },
+  alert:    { bg: 'bg-rose-500/10',   border: 'border-rose-500/25', text: 'text-rose-400',   glow: 'shadow-rose-500/5' },
 }
 const impactBadge = {
   high:   'bg-rose-500/15 text-rose-400 border-rose-500/30',
@@ -136,7 +136,7 @@ export default function AICoach() {
 
         {insights && (
           <>
-            <div className="bg-indigo-500/8 border border-indigo-500/20 rounded-2xl p-4 sm:p-5 shadow-lg shadow-indigo-500/5">
+            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 sm:p-5 shadow-lg shadow-indigo-500/5">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/25">
                   <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
@@ -301,7 +301,7 @@ export default function AICoach() {
         {/* ═══════════════════════════════════════
             INSIGHTS SIDEBAR
             ═══════════════════════════════════════ */}
-        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 flex-col h-[500px] lg:h-full min-h-0 pb-8 lg:pb-0">
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 flex flex-col h-[500px] lg:h-full min-h-0 pb-8 lg:pb-0">
           <InsightsContent />
         </div>
       </div>

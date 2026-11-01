@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Trash2, Pencil, Check, TrendingUp, TrendingDown, Landmark } from 'lucide-react'
 import api from '../lib/api.js'
 import Modal from '../components/Modal.jsx'
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
+import { fmt } from '../lib/format.js'
 
 const ASSET_CATS = ['cash', 'savings', 'investment', 'property', 'vehicle', 'other']
 const LIABILITY_CATS = ['loan', 'credit card', 'mortgage', 'other']
